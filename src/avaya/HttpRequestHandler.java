@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import entity.Configuracao;
 import entity.EndPoint;
 
 @SuppressWarnings("restriction")
@@ -25,10 +26,22 @@ public class HttpRequestHandler implements HttpHandler {
 
 	private List<ClienteRestAvaya> listaRamal;
 	
+	private Configuracao conf; 
+	
+	public List<ClienteRestAvaya> getListaRamal() {
+		return listaRamal;
+	}
+
+	public void setListaRamal(List<ClienteRestAvaya> listaRamal) {
+		this.listaRamal = listaRamal;
+	}
+
 	private EndPoint endPoint;
 	
 	HttpRequestHandler(){
 		listaRamal = new ArrayList<>();
+		conf = new Configuracao();
+		
 	}
 
 	public void handle(HttpExchange t) throws IOException {
@@ -47,8 +60,7 @@ public class HttpRequestHandler implements HttpHandler {
 
 			}
 		}
-
-		// Create a response form the request query parameters
+	
 		URI uri = t.getRequestURI();
 
 		if (uri.getPath().equals("/Avaya/rest/ramal/eventos")) {
@@ -95,11 +107,15 @@ public class HttpRequestHandler implements HttpHandler {
 					cliente = new ClienteRestAvaya();
 					listaRamal.add(cliente);
 					cliente.setTerminalName(org);
-					//cliente.obterToken();
+					cliente.setServidorEnd(conf.getNomeServidorAvaya());
+					cliente.setServidorPorta(conf.getPortaServidorAvaya());
+					
 				}
 				
+				cliente.obterToken();
 				cliente.setOrg(org);
 				cliente.setDst(dst);
+				cliente.discar();
 
 			}
 
@@ -119,6 +135,14 @@ public class HttpRequestHandler implements HttpHandler {
 
 	public void setEndPoint(EndPoint endPoint) {
 		this.endPoint = endPoint;
+	}
+
+	public Configuracao getConf() {
+		return conf;
+	}
+
+	public void setConf(Configuracao conf) {
+		this.conf = conf;
 	}
 
 }

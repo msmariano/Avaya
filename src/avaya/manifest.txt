@@ -1,0 +1,3 @@
+Main-Class: src.avaya.ServidorRest
+Name: src/avaya/ServidorRest.class
+Java-Bean: true

@@ -13,6 +13,7 @@ import com.google.gson.JsonSyntaxException;
 
 import entity.Contact;
 import entity.ContactIdRest;
+import entity.EndPoint;
 import entity.LoginCCT;
 import entity.RestContact;
 import entity.RestSubscription;
@@ -35,8 +36,15 @@ public class ClienteRestAvaya {
 	private String servidorPorta;
 	private String portaEvento;
 	private ContactIdRest contactId;
+	private List<String> eventos;
+	private String adressName;
+	private EndPoint endPoint;
 
 	private HttpURLConnection con;
+	
+	ClienteRestAvaya(){
+		eventos = new ArrayList<>();
+	}
 
 	public String obterToken() {
 
@@ -90,7 +98,7 @@ public class ClienteRestAvaya {
 		restContact.setContact(contact);
 		contact.setDestAddressNames(destAddressNames);
 		contact.setMode("create");
-		contact.setOrigAddressName(org);
+		contact.setOrigAddressName(adressName);
 		contact.setOrigTerminalName(terminalName);
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
@@ -192,6 +200,30 @@ public class ClienteRestAvaya {
 
 	public void setContactId(ContactIdRest contactId) {
 		this.contactId = contactId;
+	}
+
+	public List<String> getEventos() {
+		return eventos;
+	}
+
+	public void setEventos(List<String> eventos) {
+		this.eventos = eventos;
+	}
+
+	public String getAdressName() {
+		return adressName;
+	}
+
+	public void setAdressName(String adressName) {
+		this.adressName = adressName;
+	}
+
+	public EndPoint getEndPoint() {
+		return endPoint;
+	}
+
+	public void setEndPoint(EndPoint endPoint) {
+		this.endPoint = endPoint;
 	}
 
 }
