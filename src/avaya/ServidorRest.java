@@ -1,24 +1,24 @@
 package avaya;
 
-public class HttpServerTest {
+public class ServidorRest {
 
 	private static final String CONTEXT = "/Avaya";
 	private static final int PORT = 8000;
 	private HttpRequestHandler handler;
 
 	
-	HttpServerTest(){
+	ServidorRest(){
 		handler = new HttpRequestHandler();
 	}
 	
 	public static void main(String[] args) throws Exception {
 
-		HttpServerTest teste = new HttpServerTest();
+		ServidorRest teste = new ServidorRest();
 		// Create a new SimpleHttpServer
-		Servidor simpleHttpServer = new Servidor(PORT, CONTEXT, teste.getHandler());
+		Servidor servidor = new Servidor(PORT, CONTEXT, teste.getHandler());
 
 		// Start the server
-		simpleHttpServer.start();
+		servidor.start();
 		System.out.println("Server is started and listening on port " + PORT);
 	}
 
