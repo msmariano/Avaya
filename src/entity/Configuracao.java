@@ -6,6 +6,8 @@ public class Configuracao {
 	
 	private String nomeServidorAvaya;
 	private String portaServidorAvaya;
+	private String dominio;
+	
 	private List<Usuario> listaUsuarios;
 	
 	public String getNomeServidorAvaya() {
@@ -25,6 +27,12 @@ public class Configuracao {
 	}
 	public void setListaUsuarios(List<Usuario> listaUsuarios) {
 		this.listaUsuarios = listaUsuarios;
+	}
+	public String getDominio() {
+		return dominio;
+	}
+	public void setDominio(String dominio) {
+		this.dominio = dominio;
 	}
 	
 }
