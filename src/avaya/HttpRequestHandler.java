@@ -83,11 +83,12 @@ public class HttpRequestHandler implements HttpHandler {
 								+ endPoint.getEvent().getParams().getCalledAddressName() + ";"
 								+ endPoint.getEvent().getParams().getContactID() + "\n";
 						cli.send(evento);
-
+						
 						break;
 					}
 				}
 			}
+			ok(t,"");
 
 		} else if (uri.getPath().equals("/Avaya/rest/ramal/discar")) {
 
