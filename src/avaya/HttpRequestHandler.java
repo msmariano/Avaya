@@ -17,6 +17,7 @@ import entity.ClienteEventos;
 import entity.Configuracao;
 import entity.EndPoint;
 import entity.Usuario;
+import util.FiltroWeb;
 
 @SuppressWarnings("restriction")
 public class HttpRequestHandler implements HttpHandler {
@@ -32,6 +33,8 @@ public class HttpRequestHandler implements HttpHandler {
 
 	private Configuracao conf;
 
+	private FiltroWeb filtro;
+
 	public List<ClienteRestAvaya> getListaRamal() {
 		return listaRamal;
 	}
@@ -45,6 +48,7 @@ public class HttpRequestHandler implements HttpHandler {
 	HttpRequestHandler() {
 		listaRamal = new ArrayList<>();
 		conf = new Configuracao();
+		filtro = new FiltroWeb();
 
 	}
 
@@ -149,17 +153,15 @@ public class HttpRequestHandler implements HttpHandler {
 
 				if (!noConf) {
 					String response = "";
-					if(cliente.obterToken()) {
+					if (cliente.obterToken()) {
 						cliente.setOrg(org);
 						cliente.setDst(dst);
-						if(cliente.discar()) {
+						if (cliente.discar()) {
 							response = cliente.getContactId().getContact().getContactId();
-						}
-						else {
+						} else {
 							response = "sem contato.";
 						}
-					}
-					else
+					} else
 						response = "nao foi possivel obter token";
 					t.sendResponseHeaders(HTTP_OK_STATUS, response.length());
 					OutputStream os = t.getResponseBody();
@@ -177,8 +179,93 @@ public class HttpRequestHandler implements HttpHandler {
 			}
 
 		} else if (uri.getPath().equals("/Avaya/rest/ramal/desligar")) {
+			filtro.setUri(uri);
+			filtro.parse();
+			if(filtro.getRml()!=null) {
+				ClienteRestAvaya cliente = obtemClienteRest(t,filtro.getRml());
+				if(cliente.desligar())
+				{
+					ok(t,"");
+				}
+				else
+					ok(t,"sem contato.");
+			}
+			else
+				ok(t,"informe numero do ramal.");
+
+		} else if (uri.getPath().equals("/Avaya/rest/ramal/atender")) {
+			filtro.setUri(uri);
+			filtro.parse();
+			if(filtro.getRml()!=null) {
+				ClienteRestAvaya cliente = obtemClienteRest(t,filtro.getRml());
+				if(cliente.atender())
+				{
+					ok(t,"");
+				}
+				else
+					ok(t,"sem contato.");
+			}
+			else
+				ok(t,"informe numero do ramal.");
+		}
+
+	}
+	
+	public void ok(HttpExchange t,String response) throws IOException {
+		
+		t.sendResponseHeaders(HTTP_OK_STATUS, response.length());
+		OutputStream os = t.getResponseBody();
+		os.write(response.getBytes());
+		os.close();
+		
+	}
+
+	public ClienteRestAvaya obtemClienteRest(HttpExchange t,String rml) throws IOException {
+		ClienteRestAvaya cliente = null;
+		boolean isFind = false;
+		boolean noConf = true;
+		for (ClienteRestAvaya cra : listaRamal) {
+			if (cra.getTerminalName().equals(rml)) {
+				cliente = cra;
+				isFind = true;
+				break;
+			}
+		}
+		if (!isFind) {
+
+			if (conf.getListaUsuarios() != null) {
+				for (Usuario usuario : conf.getListaUsuarios()) {
+					if (usuario.getNomeUsuario().equals(rml)) {
+						cliente = new ClienteRestAvaya();
+						listaRamal.add(cliente);
+						cliente.setTerminalName(rml);
+						cliente.setServidorEnd(conf.getNomeServidorAvaya());
+						cliente.setServidorPorta(conf.getPortaServidorAvaya());
+						cliente.setDomain(conf.getDominio());
+						cliente.setUsername(usuario.getNomeUsuario());
+						cliente.setPassword(usuario.getSenhaUsuario());
+						cliente.setAdressName(usuario.getOrigAddressName());
+						noConf = false;
+						break;
+					}
+				}
+			} else {
+				String response = "arquivo de configuracao nao carregado.";
+				t.sendResponseHeaders(HTTP_OK_STATUS, response.length());
+				OutputStream os = t.getResponseBody();
+				os.write(response.getBytes());
+				os.close();
+			}
 
 		}
+
+		if (!noConf) {
+			
+			if (cliente.obterToken()) {
+				return cliente;
+			}
+		}
+		return null;
 
 	}
 
