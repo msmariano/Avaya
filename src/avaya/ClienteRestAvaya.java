@@ -41,12 +41,12 @@ public class ClienteRestAvaya {
 	private EndPoint endPoint;
 
 	private HttpURLConnection con;
-	
-	ClienteRestAvaya(){
+
+	ClienteRestAvaya() {
 		eventos = new ArrayList<>();
 	}
 
-	public String obterToken() {
+	public Boolean obterToken() {
 
 		Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 		LoginCCT loginCCT = new LoginCCT();
@@ -57,38 +57,104 @@ public class ClienteRestAvaya {
 		String inputJson = gson.toJson(loginCCT);
 		System.out.println(inputJson);
 		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta, "/session");
-		String jsonRetorno = HttpClient.postMethod(con, inputJson);
-		System.out.println(jsonRetorno);
-		ssotoken = gson.fromJson(jsonRetorno, TokenRest.class);
-		return jsonRetorno;
+		if (con != null) {
+			String jsonRetorno = HttpClient.postMethod(con, inputJson);
+			System.out.println(jsonRetorno);
+			ssotoken = gson.fromJson(jsonRetorno, TokenRest.class);
+			return true;
+		}
+		System.err.println("Erro ao obter token.");
+		return false;
 
 	}
 
-	public String assinarEventos(List<String> entityNames) throws UnknownHostException {
+	public Boolean assinarEventos(List<String> entityNames) throws UnknownHostException {
+
+		if (ssotoken != null && ssotoken.getUser() != null && ssotoken.getUser().getSsoTokenValue() != null) {
+			Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+			RestSubscription restSubscription = new RestSubscription();
+
+			Subscription subscription = new Subscription();
+
+			restSubscription.setSubscription(subscription);
+			SubscriptionDetails subscriptionDetails = new SubscriptionDetails();
+			subscriptionDetails.setType("terminal");
+
+			subscriptionDetails.setEntityNames(entityNames);
+			subscription.setEventEndpointUri("http://" + InetAddress.getLocalHost().getHostAddress() + ":" + portaEvento
+					+ "/Avaya/rest/ramal/eventos");
+			subscription.setProviderName("Passive");
+			subscription.setSubscriptionDetails(subscriptionDetails);
+			String inputJson = gson.toJson(restSubscription);
+
+			System.out.println(inputJson);
+
+			con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
+					"/subscriptions?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
+			if (con != null) {
+				String jsonRetorno = HttpClient.postMethod(con, inputJson);
+				System.out.println(jsonRetorno);
+				System.out.println(
+						"Servidor de Eventos Rest iniciado no servidor " + servidorEnd + " porta " + servidorPorta);
+				return true;
+
+			}
+
+		}
+		return false;
+	}
+	
+	
+	public Boolean atender() throws JsonSyntaxException, IOException {
 		Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
-		RestSubscription restSubscription = new RestSubscription();
-
-		Subscription subscription = new Subscription();
-
-		restSubscription.setSubscription(subscription);
-		SubscriptionDetails subscriptionDetails = new SubscriptionDetails();
-		subscriptionDetails.setType("terminal");
-
-		subscriptionDetails.setEntityNames(entityNames);
-		subscription.setEventEndpointUri("http://"+InetAddress.getLocalHost().getHostAddress()+":"+portaEvento+"/Avaya/rest/ramal/eventos");
-		subscription.setProviderName("Passive");
-		subscription.setSubscriptionDetails(subscriptionDetails);
-		String inputJson = gson.toJson(restSubscription);
-
+		RestContact restContact = new RestContact();
+		Contact contact = new Contact();
+		restContact.setContact(contact);
+		contact.setOrigTerminalName(terminalName);
+		contact.setMode("answer");
+		contact.setProviderName("Passive");
+		String inputJson = gson.toJson(restContact);
 		System.out.println(inputJson);
 		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
-				"/subscriptions?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
-		String jsonRetorno = HttpClient.postMethod(con, inputJson);
-		System.out.println(jsonRetorno);
-		return jsonRetorno;
+				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
+		if (con != null) {
+			String jsonRetorno = HttpClient.postMethod(con, inputJson);
+			System.out.println(jsonRetorno);
+			if (con.getResponseCode() != 200) {
+				contactId = gson.fromJson(jsonRetorno, ContactIdRest.class);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	
+	public Boolean desligar() throws JsonSyntaxException, IOException {
+		Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+		RestContact restContact = new RestContact();
+		Contact contact = new Contact();
+		restContact.setContact(contact);
+		contact.setOrigTerminalName(terminalName);
+		contact.setMode("drop");
+		contact.setProviderName("Passive");
+		String inputJson = gson.toJson(restContact);
+		System.out.println(inputJson);
+		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
+				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
+		if (con != null) {
+			String jsonRetorno = HttpClient.postMethod(con, inputJson);
+			System.out.println(jsonRetorno);
+			if (con.getResponseCode() != 200) {
+				contactId = gson.fromJson(jsonRetorno, ContactIdRest.class);
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
-	public String discar() throws JsonSyntaxException, IOException {
+	public Boolean discar() throws JsonSyntaxException, IOException {
 
 		Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 		RestContact restContact = new RestContact();
@@ -104,14 +170,16 @@ public class ClienteRestAvaya {
 		String inputJson = gson.toJson(restContact);
 		System.out.println(inputJson);
 		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
-				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
-		String jsonRetorno = HttpClient.postMethod(con, inputJson);
-		System.out.println(jsonRetorno);
-		if (con.getResponseCode() != 200) {
-			contactId = gson.fromJson(jsonRetorno, ContactIdRest.class);
+				"/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
+		if (con != null) {
+			String jsonRetorno = HttpClient.postMethod(con, inputJson);
+			System.out.println(jsonRetorno);
+			if (con.getResponseCode() != 200) {
+				return true;
+			}
 		}
-		
-		return jsonRetorno;
+
+		return false;
 	}
 
 	public String getOrg() {

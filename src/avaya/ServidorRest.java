@@ -1,7 +1,6 @@
 package avaya;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,6 +12,7 @@ import com.google.gson.GsonBuilder;
 
 import entity.ClienteEventos;
 import entity.Configuracao;
+import entity.Usuario;
 
 public class ServidorRest {
 
@@ -35,26 +35,46 @@ public class ServidorRest {
 		ServidorRest servidorRest = new ServidorRest();
 		Servidor servidor = new Servidor(PORT, CONTEXT, servidorRest.getHandler());
 		servidorRest.getHandler().setListaClienteEventos(servidorRest.listaClienteEventos);
-		String confJson="";
+		String confJson = "";
 		BufferedReader br = new BufferedReader(new FileReader("/home/msmariano/Desktop/conf.json"));
 
 		while (br.ready()) {
-			confJson = confJson+br.readLine();
-			
+			confJson = confJson + br.readLine();
+
 		}
 		br.close();
-		
-		if(confJson.length()>0) {
+
+		if (confJson.length() > 0) {
 			try {
 				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 				servidorRest.conf = gson.fromJson(confJson, Configuracao.class);
-			}catch (Exception e) {
+			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
 		}
-		
-		
+
 		servidorRest.getHandler().setConf(servidorRest.conf);
+
+		if (servidorRest.conf != null && servidorRest.conf.getListaUsuarios() != null) {
+			List<String> ramais = new ArrayList<>();
+			for (Usuario usuario : servidorRest.conf.getListaUsuarios()) {
+				ramais.add(usuario.getOrigTerminalName());
+			}
+			if (ramais.size() > 0) {
+				ClienteRestAvaya clienteRestAvaya = new ClienteRestAvaya();
+				clienteRestAvaya.setPortaEvento(servidorRest.conf.getPortaEventos());
+				clienteRestAvaya.setServidorEnd(servidorRest.conf.getNomeServidorAvaya());
+				clienteRestAvaya.setServidorPorta(servidorRest.conf.getNomeServidorAvaya());
+				clienteRestAvaya.setUsername(servidorRest.conf.getUsuarioCCT());
+				clienteRestAvaya.setPassword(servidorRest.conf.getSenhaCCT());
+				if(clienteRestAvaya.obterToken())
+					clienteRestAvaya.assinarEventos(ramais);
+				else {
+					System.err.println("Não foi possível iniciar eventos");
+				}
+			}
+		}
+
 		servidor.start();
 		System.out.println("Servidor Http iniciado na porta " + PORT);
 
@@ -67,7 +87,8 @@ public class ServidorRest {
 					try {
 						Socket cliente;
 						cliente = servidorMens.accept();
-						System.out.println("Cliente conectado: " + cliente.getInetAddress().getHostAddress()+" porta "+cliente.getPort());
+						System.out.println("Cliente conectado: " + cliente.getInetAddress().getHostAddress() + " porta "
+								+ cliente.getPort());
 						new Thread() {
 							@Override
 							public void run() {

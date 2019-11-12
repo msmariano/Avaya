@@ -148,11 +148,19 @@ public class HttpRequestHandler implements HttpHandler {
 				}
 
 				if (!noConf) {
-					cliente.obterToken();
-					cliente.setOrg(org);
-					cliente.setDst(dst);
-					cliente.discar();
 					String response = "";
+					if(cliente.obterToken()) {
+						cliente.setOrg(org);
+						cliente.setDst(dst);
+						if(cliente.discar()) {
+							response = cliente.getContactId().getContact().getContactId();
+						}
+						else {
+							response = "sem contato.";
+						}
+					}
+					else
+						response = "nao foi possivel obter token";
 					t.sendResponseHeaders(HTTP_OK_STATUS, response.length());
 					OutputStream os = t.getResponseBody();
 					os.write(response.getBytes());
@@ -167,6 +175,8 @@ public class HttpRequestHandler implements HttpHandler {
 				}
 
 			}
+
+		} else if (uri.getPath().equals("/Avaya/rest/ramal/desligar")) {
 
 		}
 
