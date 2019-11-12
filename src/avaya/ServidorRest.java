@@ -1,11 +1,18 @@
 package avaya;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import entity.ClienteEventos;
+import entity.Configuracao;
 
 public class ServidorRest {
 
@@ -15,6 +22,7 @@ public class ServidorRest {
 	private HttpRequestHandler handler;
 	private final List<ClienteEventos> listaClienteEventos;
 	private static ServerSocket servidorMens;
+	private Configuracao conf;
 
 	ServidorRest() {
 		handler = new HttpRequestHandler();
@@ -27,6 +35,26 @@ public class ServidorRest {
 		ServidorRest servidorRest = new ServidorRest();
 		Servidor servidor = new Servidor(PORT, CONTEXT, servidorRest.getHandler());
 		servidorRest.getHandler().setListaClienteEventos(servidorRest.listaClienteEventos);
+		String confJson="";
+		BufferedReader br = new BufferedReader(new FileReader("/home/msmariano/Desktop/conf.json"));
+
+		while (br.ready()) {
+			confJson = confJson+br.readLine();
+			
+		}
+		br.close();
+		
+		if(confJson.length()>0) {
+			try {
+				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+				servidorRest.conf = gson.fromJson(confJson, Configuracao.class);
+			}catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+		}
+		
+		
+		servidorRest.getHandler().setConf(servidorRest.conf);
 		servidor.start();
 		System.out.println("Servidor Http iniciado na porta " + PORT);
 

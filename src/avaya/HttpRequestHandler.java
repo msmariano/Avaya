@@ -16,6 +16,7 @@ import com.sun.net.httpserver.HttpHandler;
 import entity.ClienteEventos;
 import entity.Configuracao;
 import entity.EndPoint;
+import entity.Usuario;
 
 @SuppressWarnings("restriction")
 public class HttpRequestHandler implements HttpHandler {
@@ -76,7 +77,7 @@ public class HttpRequestHandler implements HttpHandler {
 						String evento = endPoint.getEvent().getType() + ";"
 								+ endPoint.getEvent().getParams().getCallingAddressName() + ";"
 								+ endPoint.getEvent().getParams().getCalledAddressName() + ";"
-								+ endPoint.getEvent().getParams().getContactID()+"\n";
+								+ endPoint.getEvent().getParams().getContactID() + "\n";
 						cli.send(evento);
 
 						break;
@@ -109,6 +110,7 @@ public class HttpRequestHandler implements HttpHandler {
 
 				ClienteRestAvaya cliente = null;
 				boolean isFind = false;
+				boolean noConf = true;
 				for (ClienteRestAvaya cra : listaRamal) {
 					if (cra.getTerminalName().equals(org)) {
 						cliente = cra;
@@ -117,28 +119,56 @@ public class HttpRequestHandler implements HttpHandler {
 					}
 				}
 				if (!isFind) {
-					cliente = new ClienteRestAvaya();
-					listaRamal.add(cliente);
-					cliente.setTerminalName(org);
-					cliente.setServidorEnd(conf.getNomeServidorAvaya());
-					cliente.setServidorPorta(conf.getPortaServidorAvaya());
+
+					if (conf.getListaUsuarios() != null) {
+						for (Usuario usuario : conf.getListaUsuarios()) {
+							if (usuario.getNomeUsuario().equals(org)) {
+								cliente = new ClienteRestAvaya();
+								listaRamal.add(cliente);
+								cliente.setTerminalName(org);
+								cliente.setServidorEnd(conf.getNomeServidorAvaya());
+								cliente.setServidorPorta(conf.getPortaServidorAvaya());
+								cliente.setDomain(conf.getDominio());
+								cliente.setUsername(usuario.getNomeUsuario());
+								cliente.setPassword(usuario.getSenhaUsuario());
+								cliente.setAdressName(usuario.getOrigAddressName());
+								noConf = false;
+								break;
+							}
+						}
+					} else {
+						String response = "arquivo de configuracao nao carregado.";
+						t.sendResponseHeaders(HTTP_OK_STATUS, response.length());
+						OutputStream os = t.getResponseBody();
+						os.write(response.getBytes());
+						os.close();
+
+					}
 
 				}
 
-				cliente.obterToken();
-				cliente.setOrg(org);
-				cliente.setDst(dst);
-				cliente.discar();
+				if (!noConf) {
+					cliente.obterToken();
+					cliente.setOrg(org);
+					cliente.setDst(dst);
+					cliente.discar();
+					String response = "";
+					t.sendResponseHeaders(HTTP_OK_STATUS, response.length());
+					OutputStream os = t.getResponseBody();
+					os.write(response.getBytes());
+					os.close();
+				} else {
+					String response = "Configuracao nao encontrada.";
+					t.sendResponseHeaders(HTTP_OK_STATUS, response.length());
+					OutputStream os = t.getResponseBody();
+					os.write(response.getBytes());
+					os.close();
+
+				}
 
 			}
 
 		}
-
-		String response = "";
-		t.sendResponseHeaders(HTTP_OK_STATUS, response.length());
-		OutputStream os = t.getResponseBody();
-		os.write(response.getBytes());
-		os.close();
 
 	}
 
