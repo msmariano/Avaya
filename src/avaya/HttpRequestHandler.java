@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import entity.ClienteEventos;
 import entity.Configuracao;
 import entity.EndPoint;
 
@@ -25,9 +26,11 @@ public class HttpRequestHandler implements HttpHandler {
 	private static final String EQUAL_DELIMITER = "=";
 
 	private List<ClienteRestAvaya> listaRamal;
-	
-	private Configuracao conf; 
-	
+
+	private List<ClienteEventos> listaClienteEventos;
+
+	private Configuracao conf;
+
 	public List<ClienteRestAvaya> getListaRamal() {
 		return listaRamal;
 	}
@@ -37,11 +40,11 @@ public class HttpRequestHandler implements HttpHandler {
 	}
 
 	private EndPoint endPoint;
-	
-	HttpRequestHandler(){
+
+	HttpRequestHandler() {
 		listaRamal = new ArrayList<>();
 		conf = new Configuracao();
-		
+
 	}
 
 	public void handle(HttpExchange t) throws IOException {
@@ -60,13 +63,25 @@ public class HttpRequestHandler implements HttpHandler {
 
 			}
 		}
-	
+
 		URI uri = t.getRequestURI();
 
 		if (uri.getPath().equals("/Avaya/rest/ramal/eventos")) {
 			if (requestContent.toString().length() > 0) {
 				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 				setEndPoint(gson.fromJson(requestContent.toString().replace("@xsi.type", "xsitype"), EndPoint.class));
+
+				for (ClienteEventos cli : listaClienteEventos) {
+					if (cli.getId().equals(endPoint.getEvent().getParams().getTerminalName())) {
+						String evento = endPoint.getEvent().getType() + ";"
+								+ endPoint.getEvent().getParams().getCallingAddressName() + ";"
+								+ endPoint.getEvent().getParams().getCalledAddressName() + ";"
+								+ endPoint.getEvent().getParams().getContactID()+"\n";
+						cli.send(evento);
+
+						break;
+					}
+				}
 			}
 
 		} else if (uri.getPath().equals("/Avaya/rest/ramal/discar")) {
@@ -91,27 +106,25 @@ public class HttpRequestHandler implements HttpHandler {
 						}
 					}
 				}
-				
-				
-				
+
 				ClienteRestAvaya cliente = null;
 				boolean isFind = false;
 				for (ClienteRestAvaya cra : listaRamal) {
-					if(cra.getTerminalName().equals(org)) {
+					if (cra.getTerminalName().equals(org)) {
 						cliente = cra;
 						isFind = true;
 						break;
 					}
 				}
-				if(!isFind) {
+				if (!isFind) {
 					cliente = new ClienteRestAvaya();
 					listaRamal.add(cliente);
 					cliente.setTerminalName(org);
 					cliente.setServidorEnd(conf.getNomeServidorAvaya());
 					cliente.setServidorPorta(conf.getPortaServidorAvaya());
-					
+
 				}
-				
+
 				cliente.obterToken();
 				cliente.setOrg(org);
 				cliente.setDst(dst);
@@ -143,6 +156,14 @@ public class HttpRequestHandler implements HttpHandler {
 
 	public void setConf(Configuracao conf) {
 		this.conf = conf;
+	}
+
+	public List<ClienteEventos> getListaClienteEventos() {
+		return listaClienteEventos;
+	}
+
+	public void setListaClienteEventos(List<ClienteEventos> listaClienteEventos) {
+		this.listaClienteEventos = listaClienteEventos;
 	}
 
 }
