@@ -174,7 +174,9 @@ public class ClienteRestAvaya {
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
 			System.out.println(jsonRetorno);
-			if (con.getResponseCode() != 200) {
+			if (con.getResponseCode() == 200) {
+				contactId = gson.fromJson(jsonRetorno, ContactIdRest.class);
+				
 				return true;
 			}
 		}

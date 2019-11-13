@@ -36,7 +36,7 @@ public class ServidorRest {
 		Servidor servidor = new Servidor(PORT, CONTEXT, servidorRest.getHandler());
 		servidorRest.getHandler().setListaClienteEventos(servidorRest.listaClienteEventos);
 		String confJson = "";
-		BufferedReader br = new BufferedReader(new FileReader("/home/msmariano/Desktop/conf.json"));
+		BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Hector Gussella\\Desktop\\conf.json"));
 
 		while (br.ready()) {
 			confJson = confJson + br.readLine();
@@ -62,9 +62,10 @@ public class ServidorRest {
 			}
 			if (ramais.size() > 0) {
 				ClienteRestAvaya clienteRestAvaya = new ClienteRestAvaya();
-				clienteRestAvaya.setPortaEvento(servidorRest.conf.getPortaEventos());
+				clienteRestAvaya.setPortaEvento(String.valueOf(PORT));
 				clienteRestAvaya.setServidorEnd(servidorRest.conf.getNomeServidorAvaya());
-				clienteRestAvaya.setServidorPorta(servidorRest.conf.getNomeServidorAvaya());
+				clienteRestAvaya.setServidorPorta(servidorRest.conf.getPortaServidorAvaya());
+				clienteRestAvaya.setDomain(servidorRest.conf.getDominio());
 				clienteRestAvaya.setUsername(servidorRest.conf.getUsuarioCCT());
 				clienteRestAvaya.setPassword(servidorRest.conf.getSenhaCCT());
 				if(clienteRestAvaya.obterToken())
