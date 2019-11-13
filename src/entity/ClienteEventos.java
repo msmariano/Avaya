@@ -116,7 +116,7 @@ public class ClienteEventos implements Runnable {
 						if (clienteRestAvaya.obterToken()) {
 							ativado = true;
 							this.id = parse[1];
-							retorno("monitoracao;ok");
+							retorno("monitoracao;"+clienteRestAvaya.getSsotoken().getUser().getSsoTokenValue()+";ok");
 						} else {
 							retorno("monitoracao;não foi possível obter token;error");
 							try {
