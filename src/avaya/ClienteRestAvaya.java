@@ -42,7 +42,7 @@ public class ClienteRestAvaya {
 
 	private HttpURLConnection con;
 
-	ClienteRestAvaya() {
+	public ClienteRestAvaya() {
 		eventos = new ArrayList<>();
 	}
 
@@ -116,7 +116,7 @@ public class ClienteRestAvaya {
 		String inputJson = gson.toJson(restContact);
 		System.out.println(inputJson);
 		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
-				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
+				"/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
 			System.out.println(jsonRetorno);
@@ -141,7 +141,7 @@ public class ClienteRestAvaya {
 		String inputJson = gson.toJson(restContact);
 		System.out.println(inputJson);
 		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
-				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
+				"/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
 			System.out.println(jsonRetorno);
@@ -170,7 +170,7 @@ public class ClienteRestAvaya {
 		String inputJson = gson.toJson(restContact);
 		System.out.println(inputJson);
 		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
-				"/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
+				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
 			System.out.println(jsonRetorno);

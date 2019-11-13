@@ -97,6 +97,7 @@ public class ServidorRest {
 								clienteEventos.setListaClienteEventos(servidorRest.listaClienteEventos);
 								clienteEventos.setSocketCliente(cliente);
 								servidorRest.listaClienteEventos.add(clienteEventos);
+								clienteEventos.setConf(servidorRest.conf);
 								clienteEventos.run();
 							}
 
