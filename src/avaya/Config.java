@@ -1,19 +1,5 @@
 package avaya;
 
-import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.GridLayout;
-import java.awt.Label;
-import java.awt.Panel;
-import java.awt.SystemColor;
-import java.awt.TextField;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -22,7 +8,7 @@ import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import com.google.gson.Gson;
@@ -30,109 +16,96 @@ import com.google.gson.GsonBuilder;
 
 import entity.ConfiguracaoGeral;
 
-public class Config extends JFrame implements ActionListener, WindowListener {
+public class Config extends JFrame {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 7301819076565650323L;
+	
+	private final Integer ALTURA_COMPONENTE = 30;
 
-	JTextField tFPathConfig;
-	JTextField tFHttpPort;
-	
-	JButton bObterPathConf;
-	
-	
-	
+	private JLabel lbPathConfig;
+	private JLabel lbHttpPort;
+	private JLabel lbMensPort;
+	private JTextField pathConfig;
+	private JTextField httpPort;
+	private JTextField mensPort;
+	private JButton salvar;
+	private JButton procurar;
+
+	private void initComponents() {
+		setResizable(false);
+		pathConfig = new JTextField();
+		httpPort = new JTextField("8000");
+		mensPort = new JTextField("8001");
+		salvar = new JButton("salvar");
+		procurar = new JButton("procurar");
+		lbPathConfig = new JLabel("Caminho do arquivo de configuracao:");
+		lbHttpPort = new JLabel("Porta HTTP:");
+		lbMensPort = new JLabel("Porta Mensagens:");
+		
+		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+		setTitle("Configuracao");
+		setBackground(new java.awt.Color(102, 102, 255));
+		setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+		setMaximumSize(new java.awt.Dimension(600, 600));
+		setPreferredSize(new java.awt.Dimension(600, 600));
+		getContentPane().setLayout(null);
+
+		
+		lbPathConfig.setBounds(1, 0, 400, ALTURA_COMPONENTE);
+		pathConfig.setBounds(1, 30, 400, ALTURA_COMPONENTE);
+		procurar.setBounds(405, 30, 120, ALTURA_COMPONENTE);
+		lbHttpPort.setBounds(1, 60, 120, ALTURA_COMPONENTE);
+		httpPort.setBounds(1, 90, 60, ALTURA_COMPONENTE);
+		lbMensPort.setBounds(1, 120, 200, ALTURA_COMPONENTE);
+		mensPort.setBounds(1, 150, 60, ALTURA_COMPONENTE);
+		salvar.setBounds(230, 420, 90, ALTURA_COMPONENTE);
+		
+		getContentPane().add(lbPathConfig);
+		getContentPane().add(pathConfig);
+		getContentPane().add(procurar);
+		getContentPane().add(lbHttpPort);
+		getContentPane().add(httpPort);
+		getContentPane().add(lbMensPort);
+		getContentPane().add(mensPort);
+		getContentPane().add(salvar);
+		
+		
+		
+		procurar.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				JFileChooser file = new JFileChooser();
+				file.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				int i = file.showSaveDialog(null);
+				if (i != 1) {
+					File arquivo = file.getSelectedFile();
+					System.out.println();
+					ConfiguracaoGeral cg = new ConfiguracaoGeral();
+					cg.setPathConfiguracao(arquivo.getPath());
+					pathConfig.setText(arquivo.getPath());
+					Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+					String jsonCg = gson.toJson(cg);
+					try {
+						BufferedWriter bw = new BufferedWriter(new FileWriter("configGeral.json"));
+						bw.write(jsonCg);
+						bw.close();
+					} catch (IOException e1) {
+					}
+				}
+
+			}
+
+		});
+
+	}
 
 	public Config() {
 
-		//setLayout(new BorderLayout());
-		setTitle("Configuração.");
-		setBackground(SystemColor.control);
-		setSize(500, 300);
-		JPanel p1 = new JPanel(), p2 = new JPanel(),
-				p3 = new JPanel();
-		p3.add(tFPathConfig = new JTextField(30));
-		p3.add(tFHttpPort = new JTextField(30));
-		 setDefaultCloseOperation(EXIT_ON_CLOSE);
-		
-		p2.add(bObterPathConf= new JButton("ArquivoConf"));
-		p2.add(bObterPathConf= new JButton("ArquivoConf"));
-	
-		
-		
-		
-		bObterPathConf.addActionListener(this);
-		
-		Container con = getContentPane();
-		
-		p1.add(p3);
-		p1.add(p2);
-		
-		con.add(p1);
-		
-		p1 = new JPanel();
-		p1.setBackground(SystemColor.control);
-		
-		
-		addWindowListener(this);
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == bObterPathConf) {
-
-			JFileChooser file = new JFileChooser();
-			file.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			int i = file.showSaveDialog(null);
-			if (i != 1) {
-				File arquivo = file.getSelectedFile();
-				System.out.println();
-				ConfiguracaoGeral cg = new ConfiguracaoGeral();
-				cg.setPathConfiguracao(arquivo.getPath());
-				tFPathConfig.setText(arquivo.getPath());
-				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
-				String jsonCg = gson.toJson(cg);
-				try {
-					BufferedWriter bw = new BufferedWriter(new FileWriter("configGeral.json"));
-					bw.write(jsonCg);
-					bw.close();
-				} catch (IOException e1) {
-				}
-			}
-
-		}
-
-	}
-
-	@Override
-	public void windowActivated(WindowEvent arg0) {
-	}
-
-	@Override
-	public void windowClosed(WindowEvent arg0) {
-	}
-
-	@Override
-	public void windowClosing(WindowEvent arg0) {
-		
-	}
-
-	@Override
-	public void windowDeactivated(WindowEvent arg0) {
-	}
-
-	@Override
-	public void windowDeiconified(WindowEvent arg0) {
-	}
-
-	@Override
-	public void windowIconified(WindowEvent arg0) {
-	}
-
-	@Override
-	public void windowOpened(WindowEvent arg0) {
+		initComponents();
+		setSize(550, 450);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 
 }
