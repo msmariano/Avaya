@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet"
+	href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+<script src="http://code.jquery.com/jquery-2.0.1.min.js"></script>
+<script
+	src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<div data-role="tabs" id="tabs-1">
+		<div data-role="navbar">
+			<ul>
+				<li><a href="#tab-1a" data-ajax="false">Servidor</a></li>
+				<li><a href="#tab-1b" data-ajax="false">Ramal</a></li>
+			</ul>
+		</div>
+		<div id="tab-1a" class="ui-body-d ui-content">
+			<div class="ui-field-contain">
+				<label for="text-2">End.Servidor Avaya:</label> <input name="text-2" id="text-2"
+					data-clear-btn="true" value="" type="text" />
+			</div>
+			
+			<div class="ui-field-contain">
+				<label for="text-1">Input:</label> <input name="text-1" id="text-1"
+					data-clear-btn="true" value="" type="text" />
+			</div>
+
+
+
+		</div>
+		<div id="tab-1b" class="ui-body-d ui-content">
+			<div class="ui-field-contain">
+				<label for="text-3">Input:</label>
+				<input name="text-3" id="text-3" data-clear-btn="true" value="" type="text"/>
+			</div>
+			<div class="ui-field-contain">
+				<label for="text-4">Input:</label>
+				<input name="text-4" id="text-4" data-clear-btn="true" value="" type="text"/>
+			</div>
+			<div class="ui-field-contain">
+				<label for="text-5">Input:</label>
+				<input name="text-5" id="text-5" data-clear-btn="true" value="" type="text"/>
+			</div>
+			<div class="ui-input-btn ui-btn ui-corner-all">
+				Submit
+				<input data-enhanced="true" type="submit" value="Submit" id="button-1"/>
+			</div>
+			
+			<form>
+				<input data-type="search" id="searchForTable-1"/>
+			</form>
+			<table data-role="table" id="table-1" data-mode="columntoggle" data-filter="true" data-input="#searchForTable-1" class="ui-responsive">
+				<thead>
+					<tr>
+						<th>A</th>
+						<th data-priority="1">B</th>
+						<th data-priority="2">C</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>a0</td>
+						<td>b0</td>
+						<td>c0</td>
+					</tr>
+					<tr>
+						<td>a1</td>
+						<td>b1</td>
+						<td>c1</td>
+					</tr>
+					<tr>
+						<td>a2</td>
+						<td>b2</td>
+						<td>c2</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+</body>
+</html>

@@ -1,7 +1,9 @@
 package avaya;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
@@ -70,8 +72,42 @@ public class HttpRequestHandler implements HttpHandler {
 		}
 
 		URI uri = t.getRequestURI();
+		
+		
+		if(uri.getPath().equals("/Avaya/rest/ramal/config")) {
+			String htmlConf = "";
+			try {
+				
+				String arq = getClass().getResource("/html/Config.html").toString();
+	
+				if(arq.contains("jar:")) {
+					System.out.println("Recuperando recurso no JAR");
+					InputStream in = getClass().getResourceAsStream("/html/Config.html"); 
+					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+					while (reader.ready()) {
+						htmlConf = htmlConf + reader.readLine();
 
-		if (uri.getPath().equals("/Avaya/rest/ramal/eventos")) {
+					}
+					reader.close();
+					ok(t,htmlConf);
+					return;
+				}
+				System.out.println("Recuperando recurso");
+				arq = arq.replace("file:", "");
+				arq = arq.replace("jar:", "");
+				BufferedReader brConf = new BufferedReader(new FileReader(arq));
+				while (brConf.ready()) {
+					htmlConf = htmlConf + brConf.readLine();
+
+				}
+				brConf.close();
+				ok(t,htmlConf);
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+			}
+			
+
+		} else if (uri.getPath().equals("/Avaya/rest/ramal/eventos")) {
 			if (requestContent.toString().length() > 0) {
 				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 				setEndPoint(gson.fromJson(requestContent.toString().replace("@xsi.type", "xsitype"), EndPoint.class));
