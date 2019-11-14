@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder;
 
 import entity.ClienteEventos;
 import entity.Configuracao;
+import entity.ConfiguracaoGeral;
 import entity.Usuario;
 
 public class ServidorRest {
@@ -23,6 +24,7 @@ public class ServidorRest {
 	private final List<ClienteEventos> listaClienteEventos;
 	private static ServerSocket servidorMens;
 	private Configuracao conf;
+	private ConfiguracaoGeral configuracaoGeral;
 
 	ServidorRest() {
 		handler = new HttpRequestHandler();
@@ -30,13 +32,52 @@ public class ServidorRest {
 	}
 
 	public static void main(String[] args) throws Exception {
+		
+		ServidorRest servidorRest = new ServidorRest();
+		BufferedReader br = null;
+		if(args.length >0) {
+			if(args[0].equalsIgnoreCase("config")) {
+				Config config = new Config();
+				config.setVisible(true);
+				return;
+			}
+		}
+		String configGeralJson="";
+		try {
+			br = new BufferedReader(new FileReader("configGeral.json"));
+		}catch (Exception e) {
+			System.err.println("Falhou ao abrir arquivo de configuração Geral. Execute java -jar Avaya.jar config e realize as configuções gerais.");
+			return;
+		}
+
+		while (br.ready()) {
+			configGeralJson = configGeralJson + br.readLine();
+
+		}
+		
+		if (configGeralJson.length() > 0) {
+			try {
+				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+				servidorRest.configuracaoGeral = gson.fromJson(configGeralJson, ConfiguracaoGeral.class);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+		}
+		
+		br.close();
+		
 
 		servidorMens = new ServerSocket(PORTMENS);
-		ServidorRest servidorRest = new ServidorRest();
 		Servidor servidor = new Servidor(PORT, CONTEXT, servidorRest.getHandler());
 		servidorRest.getHandler().setListaClienteEventos(servidorRest.listaClienteEventos);
 		String confJson = "";
-		BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Hector Gussella\\Desktop\\conf.json"));
+		
+		try {
+			br = new BufferedReader(new FileReader(servidorRest.configuracaoGeral.getPathConfiguracao()));
+		}catch (Exception e) {
+			System.err.println("Falhou ao abrir arquivo de configuração.");
+			return;
+		}
 
 		while (br.ready()) {
 			confJson = confJson + br.readLine();
@@ -71,7 +112,7 @@ public class ServidorRest {
 				if(clienteRestAvaya.obterToken())
 					clienteRestAvaya.assinarEventos(ramais);
 				else {
-					System.err.println("NÃ£o foi possÃ­vel iniciar eventos");
+					System.err.println("Nao foi possivel iniciar eventos");
 				}
 			}
 		}
@@ -120,6 +161,14 @@ public class ServidorRest {
 
 	public void setHandler(HttpRequestHandler handler) {
 		this.handler = handler;
+	}
+
+	public ConfiguracaoGeral getConfiguracaoGeral() {
+		return configuracaoGeral;
+	}
+
+	public void setConfiguracaoGeral(ConfiguracaoGeral configuracaoGeral) {
+		this.configuracaoGeral = configuracaoGeral;
 	}
 
 }
