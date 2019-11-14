@@ -37,8 +37,11 @@ public class ServidorRest {
 		BufferedReader br = null;
 		if(args.length >0) {
 			if(args[0].equalsIgnoreCase("config")) {
-				Config config = new Config();
-				config.setVisible(true);
+				java.awt.EventQueue.invokeLater(new Runnable() {
+		            public void run() {
+		                new Config().setVisible(true);
+		            }
+		        });
 				return;
 			}
 		}
@@ -46,7 +49,7 @@ public class ServidorRest {
 		try {
 			br = new BufferedReader(new FileReader("configGeral.json"));
 		}catch (Exception e) {
-			System.err.println("Falhou ao abrir arquivo de configuração Geral. Execute java -jar Avaya.jar config e realize as configuções gerais.");
+			System.err.println("Falhou ao abrir arquivo de configuracao Geral. Execute java -jar Avaya.jar config e realize as configuï¿½ï¿½es gerais.");
 			return;
 		}
 
@@ -75,7 +78,7 @@ public class ServidorRest {
 		try {
 			br = new BufferedReader(new FileReader(servidorRest.configuracaoGeral.getPathConfiguracao()));
 		}catch (Exception e) {
-			System.err.println("Falhou ao abrir arquivo de configuração.");
+			System.err.println("Falhou ao abrir arquivo de configuraï¿½ï¿½o.");
 			return;
 		}
 
