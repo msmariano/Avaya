@@ -21,8 +21,6 @@ import entity.Usuario;
 public class ServidorRest {
 
 	private static final String CONTEXT = "/Avaya";
-	private static final int PORT = 8000;
-	private static final int PORTMENS = 8001;
 	private HttpRequestHandler handler;
 	private final List<ClienteEventos> listaClienteEventos;
 	private static ServerSocket servidorMens;
@@ -55,8 +53,8 @@ public class ServidorRest {
 			    String portaHttpConfGeral = s.next();
 			    System.err.println("Digite o numero da porta de Mensagens:");
 			    String portaMens= s.next();
-			    System.err.println("Digite o caminho do arquivo de configuracao:");
-			    String arqPathConf = s.next();
+			    //System.err.println("Digite o caminho do arquivo de configuracao:");
+			    String arqPathConf = "";
 			    ConfiguracaoGeral confGeral = new ConfiguracaoGeral();
 			    confGeral.setHttpPort(portaHttpConfGeral);
 			    confGeral.setMensPort(portaMens);
@@ -95,13 +93,13 @@ public class ServidorRest {
 		br.close();
 		
 
-		servidorMens = new ServerSocket(PORTMENS);
-		Servidor servidor = new Servidor(PORT, CONTEXT, servidorRest.getHandler());
+		servidorMens = new ServerSocket(Integer.parseInt(servidorRest.configuracaoGeral.getMensPort()));
+		Servidor servidor = new Servidor(Integer.parseInt(servidorRest.configuracaoGeral.getHttpPort()), CONTEXT, servidorRest.getHandler());
 		servidorRest.getHandler().setListaClienteEventos(servidorRest.listaClienteEventos);
 		String confJson = "";
 		
 		try {
-			br = new BufferedReader(new FileReader(servidorRest.configuracaoGeral.getPathConfiguracao()));
+			br = new BufferedReader(new FileReader("config.json"));
 			while (br.ready()) {
 				confJson = confJson + br.readLine();
 
@@ -135,7 +133,7 @@ public class ServidorRest {
 				}
 				if (ramais.size() > 0) {
 					ClienteRestAvaya clienteRestAvaya = new ClienteRestAvaya();
-					clienteRestAvaya.setPortaEvento(String.valueOf(PORT));
+					clienteRestAvaya.setPortaEvento(String.valueOf(servidorRest.configuracaoGeral.getHttpPort()));
 					clienteRestAvaya.setServidorEnd(servidorRest.conf.getNomeServidorAvaya());
 					clienteRestAvaya.setServidorPorta(servidorRest.conf.getPortaServidorAvaya());
 					clienteRestAvaya.setDomain(servidorRest.conf.getDominio());
@@ -151,13 +149,13 @@ public class ServidorRest {
 		}
 
 		servidor.start();
-		System.out.println("Servidor Http iniciado na porta " + PORT);
+		System.out.println("Servidor Http iniciado na porta " + servidorRest.configuracaoGeral.getHttpPort());
 
 		new Thread() {
 
 			@Override
 			public void run() {
-				System.out.println("Servidor de Mensagens iniciado na porta " + PORTMENS);
+				System.out.println("Servidor de Mensagens iniciado na porta " + servidorRest.configuracaoGeral.getMensPort());
 				while (true) {
 					try {
 						Socket cliente;

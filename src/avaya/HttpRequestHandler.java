@@ -92,6 +92,15 @@ public class HttpRequestHandler implements HttpHandler {
 			String origAddressName = "";
 			String confRamal = "";
 			String usuarioTableHtml = "";
+			String terminalExcluir = "";
+			String excluirRamal = "";
+			String tagAlert = "";
+			String editarRamal = "";
+			String terminalEditar= "";
+			String tagNomeUsuario="";
+			String tagSenhaUsuario="";
+			String tagOrigTerminalName="";
+			String tagOrigAddressName="";
 
 			try {
 				BufferedReader rd = new BufferedReader(new FileReader("config.json"));
@@ -118,7 +127,7 @@ public class HttpRequestHandler implements HttpHandler {
 
 				for (String campo : variavelValor) {
 					String conf[] = campo.split("=");
-					if (conf != null && conf.length > 0) {
+					if (conf != null && conf.length > 1) {
 						if (conf[0].equals("endServidorAvaya")) {
 							endServidorAvaya = conf[1];
 						} else if (conf[0].equals("confServidor")) {
@@ -137,6 +146,15 @@ public class HttpRequestHandler implements HttpHandler {
 							origAddressName = conf[1];
 						} else if (conf[0].equals("confRamal")) {
 							confRamal = conf[1];
+						} else if (conf[0].equals("terminalExcluir")) {
+							terminalExcluir = conf[1];
+						} else if (conf[0].equals("excluirRamal")) {
+							excluirRamal = conf[1];
+						}
+						else if (conf[0].equals("editarRamal")) {
+							editarRamal = conf[1];
+						} else if (conf[0].equals("terminalEditar")) {
+							terminalEditar = conf[1];
 						}
 					}
 
@@ -151,21 +169,54 @@ public class HttpRequestHandler implements HttpHandler {
 			} else if (confRamal.equals("true")) {
 				boolean isFind = false;
 				for (Usuario usuario : conf.getListaUsuarios()) {
-					if (usuario.getNomeUsuario().equals(nomeUsuario)) {
+					if (usuario.getOrigTerminalName().equals(origTerminalName)) {
 						isFind = true;
 						usuario.setSenhaUsuario(senhaUsuario);
 						usuario.setOrigAddressName(origAddressName);
 						usuario.setOrigTerminalName(origTerminalName);
+						usuario.setNomeUsuario(nomeUsuario);
 						break;
 					}
 				}
 				if (!isFind) {
-					Usuario usuario = new Usuario();
-					usuario.setSenhaUsuario(senhaUsuario);
-					usuario.setOrigAddressName(origAddressName);
-					usuario.setOrigTerminalName(origTerminalName);
-					usuario.setNomeUsuario(nomeUsuario);
-					conf.getListaUsuarios().add(usuario);
+					if (senhaUsuario.trim().length() == 0) {
+						tagAlert = "alert('Senha deve ser preenchida')";
+					} else if (origAddressName.trim().length() == 0) {
+						tagAlert = "alert('Nome do Endereço de origem deve ser preenchido')";
+					} else if (origTerminalName.trim().length() == 0) {
+						tagAlert = "alert('Nome do Terminal de Origem')";
+					} else if (nomeUsuario.trim().length() == 0) {
+						tagAlert = "alert('Nome do Usuário')";
+					} else {
+						Usuario usuario = new Usuario();
+						usuario.setSenhaUsuario(senhaUsuario);
+						usuario.setOrigAddressName(origAddressName);
+						usuario.setOrigTerminalName(origTerminalName);
+						usuario.setNomeUsuario(nomeUsuario);
+						conf.getListaUsuarios().add(usuario);
+					}
+				}
+			} else if (excluirRamal.equals("true")) {
+				for (Usuario usuario : conf.getListaUsuarios()) {
+					if (usuario.getOrigTerminalName().equals(terminalExcluir)) {
+						conf.getListaUsuarios().remove(usuario);
+						break;
+					}
+
+				}
+
+			}
+			else if (editarRamal.equals("true")) {
+				
+				for (Usuario usuario : conf.getListaUsuarios()) {
+					if (usuario.getOrigTerminalName().equals(terminalEditar)) {
+						tagNomeUsuario = usuario.getNomeUsuario();
+						tagSenhaUsuario = usuario.getSenhaUsuario();
+						tagOrigAddressName = usuario.getOrigAddressName();
+						tagOrigTerminalName = usuario.getOrigTerminalName();
+						break;
+					}
+
 				}
 			}
 
@@ -203,11 +254,23 @@ public class HttpRequestHandler implements HttpHandler {
 				htmlConf = htmlConf.replace("endServidorAvayaTag", conf.getNomeServidorAvaya());
 				htmlConf = htmlConf.replace("portaServidorAvayaTag", conf.getPortaServidorAvaya());
 				htmlConf = htmlConf.replace("dominioTag", conf.getDominio());
+				htmlConf = htmlConf.replace("tagAlert", tagAlert);
+				
+				htmlConf = htmlConf.replace("tagNomeUsuario", tagNomeUsuario);
+				htmlConf = htmlConf.replace("tagSenhaUsuario", tagSenhaUsuario);
+				htmlConf = htmlConf.replace("tagOrigTerminalName", tagOrigTerminalName);
+				htmlConf = htmlConf.replace("tagOrigAddressName", tagOrigAddressName);
+				
+				
+				
 
 				for (Usuario usuario : conf.getListaUsuarios()) {
 					usuarioTableHtml = usuarioTableHtml + "<tr><td>" + usuario.getNomeUsuario() + "</td><td>"
 							+ usuario.getOrigAddressName() + "</td><td>" + usuario.getOrigTerminalName()
-							+ "</td><td><input type=\"button\" value=\"excluir\" onclick=\"excluir('"+usuario.getOrigTerminalName()+"');\"/></td></tr>";
+							+ "</td><td><input type=\"button\" value=\"excluir\" onclick=\"excluir('"
+							+ usuario.getOrigTerminalName()
+							+ "');\"/></td> <td> <input type=\"button\" value=\"editar\" onclick=\"editar('"
+							+ usuario.getOrigTerminalName()+"');\"/></td></tr>";
 
 				}
 				htmlConf = htmlConf.replace("linhaTag", usuarioTableHtml);
