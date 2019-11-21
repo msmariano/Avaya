@@ -5,15 +5,37 @@
 <link rel="stylesheet"
 	href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
 <script src="http://code.jquery.com/jquery-2.0.1.min.js"></script>
-<script
-	src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
 	
 <script>
 
 	function excluir(terminal)
-	{
-		alert(terminal);
+	{		
+		
+		$('#FormRamal').attr('action', "/Avaya/rest/ramal/config");
+		$('input[name="confRamal"]').attr('value','false');
+		$('input[name="excluirRamal"]').attr('value','true');
+		$('input[name="terminalExcluir"]').attr('value',terminal);
+		$('#FormRamal').submit();
 	}
+
+	function editar(terminal)
+	{		
+		
+		$('#FormRamal').attr('action', "/Avaya/rest/ramal/config");
+		$('input[name="confRamal"]').attr('value','false');
+		$('input[name="editarRamal"]').attr('value','true');
+		$('input[name="terminalEditar"]').attr('value',terminal);
+		$('#FormRamal').submit();
+	}
+
+	
+
+	function mensagem()
+	{
+		tagAlert
+	}
+	
 	
 	
 </script>
@@ -23,18 +45,17 @@
 <meta charset="UTF-8">
 <title>Configuração</title>
 </head>
-<body>
+<body onload="mensagem();">
 	<div data-role="tabs" id="tabs-1">
-		<div data-role="navbar">
-			<ul>
-				<li><a href="#tab-1a" data-ajax="false">Servidor</a></li>
-				<li><a href="#tab-1b" data-ajax="false">Ramal</a></li>
-			</ul>
-		</div>
+		
 		<div id="tab-1a" class="ui-body-d ui-content">
+		<b>Configuração do Servidor</b> 
 		<form method="post" action="/Avaya/rest/ramal/config">
 			<input type = "hidden" name="confServidor" id="confServidor" value="true" />
-			<input type = "hidden" name="confRamal" id="confServidor" value="false" />
+			<input type = "hidden" name="confRamal" id="confRamal" value="false" />
+			<input type = "hidden" name="excluirRamal" id="excluirRamal" value="false" />
+			<input type = "hidden" name="editarRamal" id="editarRamal"  value="false"/>
+			
 			<div class="ui-field-contain">
 				<label for="text-2">End.Servidor Avaya:</label> <input name="endServidorAvaya" id="endServidorAvaya"
 					data-clear-btn="true" value="endServidorAvayaTag" type="text" />
@@ -56,25 +77,33 @@
 	
 		</div>
 		<div id="tab-1b" class="ui-body-d ui-content">
-			<form method="post" action="/Avaya/rest/ramal/config">
+			<b>Configuração do Ramal</b> 
+			<form method="post" action="/Avaya/rest/ramal/config" id="FormRamal">
 				<input type = "hidden" name="confServidor" id="confServidor" value="false" />
-				<input type = "hidden" name="confRamal" id="confServidor" value="true" />
+				<input type = "hidden" name="confRamal" id="confRamal" value="true" />
+				<input type = "hidden" name="terminalExcluir" id="terminalExcluir" />
+				<input type = "hidden" name="excluirRamal" id="excluirRamal"  />
+				
+				
+				<input type = "hidden" name="terminalEditar" id="terminalEditar" />
+				<input type = "hidden" name="editarRamal" id="editarRamal"  />
+				
 				<div class="ui-field-contain">
 					<label for="text-3">Nome do Usuário:</label>
-					<input name="nomeUsuario" id="nomeUsuario" data-clear-btn="true" value="" type="text"/>
+					<input name="nomeUsuario" id="nomeUsuario" data-clear-btn="true" value="tagNomeUsuario" type="text"/>
 				</div>
 				<div class="ui-field-contain">
 					<label for="text-4">Senha:</label>
-					<input name="senhaUsuario" id="senhaUsuario" data-clear-btn="true" value="" type="text"/>
+					<input name="senhaUsuario" id="senhaUsuario" data-clear-btn="true" value="tagSenhaUsuario" type="text"/>
 				</div>
 				<div class="ui-field-contain">
 					<label for="text-5">Nome do Terminal de Origem:</label>
-					<input name="origTerminalName" id="origTerminalName" data-clear-btn="true" value="" type="text"/>
+					<input name="origTerminalName" id="origTerminalName" data-clear-btn="true" value="tagOrigTerminalName" type="text"/>
 				</div>
 				
 				<div class="ui-field-contain">
 					<label for="text-5">Nome do Endereço de Origem:</label>
-					<input name="origAddressName" id="origAddressName" data-clear-btn="true" value="" type="text"/>
+					<input name="origAddressName" id="origAddressName" data-clear-btn="true" value="tagOrigAddressName" type="text"/>
 				</div>
 				
 				
@@ -84,16 +113,15 @@
 				</div>
 			</form>
 			
-			<form>
-				<input data-type="search" id="searchForTable-1"/>
-			</form>
-			<table data-role="table" id="table-1" data-mode="columntoggle" data-filter="true" data-input="#searchForTable-1" class="ui-responsive">
+			
+			<table data-role="table" id="table-1" border="1" data-mode="columntoggle" data-filter="true" data-input="#searchForTable-1" class="ui-responsive">
 				<thead>
 					<tr>
 						<th>Nome Usuário</th>
 						<th data-priority="1">Nome do Endereço</th>
 						<th data-priority="2">Nome do Terminal</th>
 						<th>Excluir</th>
+						<th>Editar</th>
 					</tr>
 				</thead>
 				<tbody>
