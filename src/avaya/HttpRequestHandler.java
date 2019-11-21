@@ -1,10 +1,7 @@
 package avaya;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -77,110 +74,120 @@ public class HttpRequestHandler implements HttpHandler {
 		}
 
 		URI uri = t.getRequestURI();
-		
-		
-		if(uri.getPath().equals("/Avaya/rest/ramal/config")) {
+
+		if (uri.getPath().equals("/Avaya/rest/ramal/config")) {
+
+			Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+			List<Usuario> listaUsuarios = null;
+
 			String htmlConf = "";
 			String confServidor = "";
 			String endServidorAvaya = "";
 			String portaServidorAvaya = "";
 			String dominio = "";
 			String jsonConfig = "";
-			
-			if(requestContent.toString().trim().length()>0) {
-				
+			String nomeUsuario = "";
+			String senhaUsuario = "";
+			String origTerminalName = "";
+			String origAddressName = "";
+			String confRamal = "";
+			String usuarioTableHtml = "";
+
+			try {
+				BufferedReader rd = new BufferedReader(new FileReader("config.json"));
+				while (rd.ready()) {
+					jsonConfig = jsonConfig + rd.readLine();
+				}
+				rd.close();
+				gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+				if (jsonConfig.length() > 0) {
+					conf = gson.fromJson(jsonConfig, Configuracao.class);
+				} else
+					conf = new Configuracao();
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+			if (conf.getListaUsuarios() == null) {
+				listaUsuarios = new ArrayList<>();
+				conf.setListaUsuarios(listaUsuarios);
+			}
+
+			if (requestContent.toString().trim().length() > 0) {
+
 				String variavelValor[] = requestContent.toString().split("&");
-				
+
 				for (String campo : variavelValor) {
 					String conf[] = campo.split("=");
-					if(conf!=null&&conf.length>0) {
-						if(conf[0].equals("endServidorAvaya")) {
+					if (conf != null && conf.length > 0) {
+						if (conf[0].equals("endServidorAvaya")) {
 							endServidorAvaya = conf[1];
-						}
-						else if(conf[0].equals("confServidor")) {
+						} else if (conf[0].equals("confServidor")) {
 							confServidor = conf[1];
-						}
-						else if(conf[0].equals("portaServidorAvaya")) {
+						} else if (conf[0].equals("portaServidorAvaya")) {
 							portaServidorAvaya = conf[1];
-						}
-						else if(conf[0].equals("dominio")) {
+						} else if (conf[0].equals("dominio")) {
 							dominio = conf[1];
-						}	
+						} else if (conf[0].equals("nomeUsuario")) {
+							nomeUsuario = conf[1];
+						} else if (conf[0].equals("senhaUsuario")) {
+							senhaUsuario = conf[1];
+						} else if (conf[0].equals("origTerminalName")) {
+							origTerminalName = conf[1];
+						} else if (conf[0].equals("origAddressName")) {
+							origAddressName = conf[1];
+						} else if (conf[0].equals("confRamal")) {
+							confRamal = conf[1];
+						}
 					}
-					
+
 				}
-				
+
 			}
-			
-			if(confServidor.equals("true")) {
-				Configuracao conf = null;
-				List<Usuario> listaUsuarios = null;
-				try {
-					BufferedReader rd = new BufferedReader(new FileReader("config.json"));
-					while (rd.ready()) {
-						jsonConfig = jsonConfig + rd.readLine();
-					}
-					rd.close();
-				}
-				catch (Exception e) {
-					// TODO: handle exception
-				}
-				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
-				if(jsonConfig.length()>0) {
-					conf = gson.fromJson(jsonConfig, Configuracao.class);
-				}
-				else
-					conf = new Configuracao();
-				
-				if(conf.getListaUsuarios()==null)
-					listaUsuarios = new ArrayList<>();
-				conf.setListaUsuarios(listaUsuarios);
+
+			if (confServidor.equals("true")) {
 				conf.setNomeServidorAvaya(endServidorAvaya);
 				conf.setPortaServidorAvaya(portaServidorAvaya);
 				conf.setDominio(dominio);
-				
-				jsonConfig = gson.toJson(conf);
-				BufferedWriter bw = new BufferedWriter(new FileWriter("config.json"));
-				bw.write(jsonConfig);
-				bw.close();
-				
-			}
-			else {
-				try {
-					BufferedReader rd = new BufferedReader(new FileReader("config.json"));
-					while (rd.ready()) {
-						jsonConfig = jsonConfig + rd.readLine();
+			} else if (confRamal.equals("true")) {
+				boolean isFind = false;
+				for (Usuario usuario : conf.getListaUsuarios()) {
+					if (usuario.getNomeUsuario().equals(nomeUsuario)) {
+						isFind = true;
+						usuario.setSenhaUsuario(senhaUsuario);
+						usuario.setOrigAddressName(origAddressName);
+						usuario.setOrigTerminalName(origTerminalName);
+						break;
 					}
-					rd.close();
 				}
-				catch (Exception e) {
-					// TODO: handle exception
+				if (!isFind) {
+					Usuario usuario = new Usuario();
+					usuario.setSenhaUsuario(senhaUsuario);
+					usuario.setOrigAddressName(origAddressName);
+					usuario.setOrigTerminalName(origTerminalName);
+					usuario.setNomeUsuario(nomeUsuario);
+					conf.getListaUsuarios().add(usuario);
 				}
-				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
-				if(jsonConfig.length()>0) {
-					conf = gson.fromJson(jsonConfig, Configuracao.class);
-					endServidorAvaya = conf.getNomeServidorAvaya();
-					portaServidorAvaya = conf.getPortaServidorAvaya();
-					dominio = conf.getDominio();
-				}
-				
 			}
-						
-			
+
+			jsonConfig = gson.toJson(conf);
+			BufferedWriter bw = new BufferedWriter(new FileWriter("config.json"));
+			bw.write(jsonConfig);
+			bw.close();
+
 			try {
-				
+
 				String arq = getClass().getResource("/html/Config.html").toString();
-	
-				if(arq.contains("jar:")) {
+
+				if (arq.contains("jar:")) {
 					System.out.println("Recuperando recurso no JAR");
-					InputStream in = getClass().getResourceAsStream("/html/Config.html"); 
+					InputStream in = getClass().getResourceAsStream("/html/Config.html");
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 					while (reader.ready()) {
 						htmlConf = htmlConf + reader.readLine();
 
 					}
 					reader.close();
-					ok(t,htmlConf);
+					ok(t, htmlConf);
 					return;
 				}
 				System.out.println("Recuperando recurso");
@@ -192,28 +199,31 @@ public class HttpRequestHandler implements HttpHandler {
 
 				}
 				brConf.close();
-				
-				
-				htmlConf = htmlConf.replace("endServidorAvayaTag", endServidorAvaya);
-				htmlConf = htmlConf.replace("portaServidorAvayaTag", portaServidorAvaya);
-				htmlConf = htmlConf.replace("dominioTag", dominio);
-				
-				
-				
-				
-				try {
-				    byte[] bs = htmlConf.getBytes("UTF-8");
-				    t.sendResponseHeaders(200, bs.length);
-				    OutputStream os = t.getResponseBody();
-				    os.write(bs);
-				} catch (IOException ex) {
-				    
+
+				htmlConf = htmlConf.replace("endServidorAvayaTag", conf.getNomeServidorAvaya());
+				htmlConf = htmlConf.replace("portaServidorAvayaTag", conf.getPortaServidorAvaya());
+				htmlConf = htmlConf.replace("dominioTag", conf.getDominio());
+
+				for (Usuario usuario : conf.getListaUsuarios()) {
+					usuarioTableHtml = usuarioTableHtml + "<tr><td>" + usuario.getNomeUsuario() + "</td><td>"
+							+ usuario.getOrigAddressName() + "</td><td>" + usuario.getOrigTerminalName()
+							+ "</td><td><input type=\"button\" value=\"excluir\" onclick=\"excluir('"+usuario.getOrigTerminalName()+"');\"/></td></tr>";
+
 				}
-				
+				htmlConf = htmlConf.replace("linhaTag", usuarioTableHtml);
+
+				try {
+					byte[] bs = htmlConf.getBytes("UTF-8");
+					t.sendResponseHeaders(200, bs.length);
+					OutputStream os = t.getResponseBody();
+					os.write(bs);
+				} catch (IOException ex) {
+
+				}
+
 			} catch (Exception e) {
 				System.err.println(e.getMessage());
 			}
-			
 
 		} else if (uri.getPath().equals("/Avaya/rest/ramal/eventos")) {
 			if (requestContent.toString().length() > 0) {
@@ -227,12 +237,12 @@ public class HttpRequestHandler implements HttpHandler {
 								+ endPoint.getEvent().getParams().getCalledAddressName() + ";"
 								+ endPoint.getEvent().getParams().getContactID() + "\n";
 						cli.send(evento);
-						
+
 						break;
 					}
 				}
 			}
-			ok(t,"");
+			ok(t, "");
 
 		} else if (uri.getPath().equals("/Avaya/rest/ramal/discar")) {
 
@@ -326,46 +336,40 @@ public class HttpRequestHandler implements HttpHandler {
 		} else if (uri.getPath().equals("/Avaya/rest/ramal/desligar")) {
 			filtro.setUri(uri);
 			filtro.parse();
-			if(filtro.getRml()!=null) {
-				ClienteRestAvaya cliente = obtemClienteRest(t,filtro.getRml());
-				if(cliente.desligar())
-				{
-					ok(t,"");
-				}
-				else
-					ok(t,"sem contato.");
-			}
-			else
-				ok(t,"informe numero do ramal.");
+			if (filtro.getRml() != null) {
+				ClienteRestAvaya cliente = obtemClienteRest(t, filtro.getRml());
+				if (cliente.desligar()) {
+					ok(t, "");
+				} else
+					ok(t, "sem contato.");
+			} else
+				ok(t, "informe numero do ramal.");
 
 		} else if (uri.getPath().equals("/Avaya/rest/ramal/atender")) {
 			filtro.setUri(uri);
 			filtro.parse();
-			if(filtro.getRml()!=null) {
-				ClienteRestAvaya cliente = obtemClienteRest(t,filtro.getRml());
-				if(cliente.atender())
-				{
-					ok(t,"");
-				}
-				else
-					ok(t,"sem contato.");
-			}
-			else
-				ok(t,"informe numero do ramal.");
+			if (filtro.getRml() != null) {
+				ClienteRestAvaya cliente = obtemClienteRest(t, filtro.getRml());
+				if (cliente.atender()) {
+					ok(t, "");
+				} else
+					ok(t, "sem contato.");
+			} else
+				ok(t, "informe numero do ramal.");
 		}
 
 	}
-	
-	public void ok(HttpExchange t,String response) throws IOException {
-		
+
+	public void ok(HttpExchange t, String response) throws IOException {
+
 		t.sendResponseHeaders(HTTP_OK_STATUS, response.length());
 		OutputStream os = t.getResponseBody();
 		os.write(response.getBytes());
 		os.close();
-		
+
 	}
 
-	public ClienteRestAvaya obtemClienteRest(HttpExchange t,String rml) throws IOException {
+	public ClienteRestAvaya obtemClienteRest(HttpExchange t, String rml) throws IOException {
 		ClienteRestAvaya cliente = null;
 		boolean isFind = false;
 		boolean noConf = true;
@@ -405,7 +409,7 @@ public class HttpRequestHandler implements HttpHandler {
 		}
 
 		if (!noConf) {
-			
+
 			if (cliente.obterToken()) {
 				return cliente;
 			}

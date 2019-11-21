@@ -7,6 +7,19 @@
 <script src="http://code.jquery.com/jquery-2.0.1.min.js"></script>
 <script
 	src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	
+<script>
+
+	function excluir(terminal)
+	{
+		alert(terminal);
+	}
+	
+	
+</script>
+	
+	
+	
 <meta charset="UTF-8">
 <title>Configuração</title>
 </head>
@@ -21,6 +34,7 @@
 		<div id="tab-1a" class="ui-body-d ui-content">
 		<form method="post" action="/Avaya/rest/ramal/config">
 			<input type = "hidden" name="confServidor" id="confServidor" value="true" />
+			<input type = "hidden" name="confRamal" id="confServidor" value="false" />
 			<div class="ui-field-contain">
 				<label for="text-2">End.Servidor Avaya:</label> <input name="endServidorAvaya" id="endServidorAvaya"
 					data-clear-btn="true" value="endServidorAvayaTag" type="text" />
@@ -42,22 +56,33 @@
 	
 		</div>
 		<div id="tab-1b" class="ui-body-d ui-content">
-			<div class="ui-field-contain">
-				<label for="text-3">Input:</label>
-				<input name="text-3" id="text-3" data-clear-btn="true" value="" type="text"/>
-			</div>
-			<div class="ui-field-contain">
-				<label for="text-4">Input:</label>
-				<input name="text-4" id="text-4" data-clear-btn="true" value="" type="text"/>
-			</div>
-			<div class="ui-field-contain">
-				<label for="text-5">Input:</label>
-				<input name="text-5" id="text-5" data-clear-btn="true" value="" type="text"/>
-			</div>
-			<div class="ui-input-btn ui-btn ui-corner-all">
-				Submit
-				<input data-enhanced="true" type="submit" value="Submit" id="button-1"/>
-			</div>
+			<form method="post" action="/Avaya/rest/ramal/config">
+				<input type = "hidden" name="confServidor" id="confServidor" value="false" />
+				<input type = "hidden" name="confRamal" id="confServidor" value="true" />
+				<div class="ui-field-contain">
+					<label for="text-3">Nome do Usuário:</label>
+					<input name="nomeUsuario" id="nomeUsuario" data-clear-btn="true" value="" type="text"/>
+				</div>
+				<div class="ui-field-contain">
+					<label for="text-4">Senha:</label>
+					<input name="senhaUsuario" id="senhaUsuario" data-clear-btn="true" value="" type="text"/>
+				</div>
+				<div class="ui-field-contain">
+					<label for="text-5">Nome do Terminal de Origem:</label>
+					<input name="origTerminalName" id="origTerminalName" data-clear-btn="true" value="" type="text"/>
+				</div>
+				
+				<div class="ui-field-contain">
+					<label for="text-5">Nome do Endereço de Origem:</label>
+					<input name="origAddressName" id="origAddressName" data-clear-btn="true" value="" type="text"/>
+				</div>
+				
+				
+				<div class="ui-input-btn ui-btn ui-corner-all">
+					Gravar
+					<input data-enhanced="true" type="submit" value="Submit" id="button-1"/>
+				</div>
+			</form>
 			
 			<form>
 				<input data-type="search" id="searchForTable-1"/>
@@ -65,27 +90,14 @@
 			<table data-role="table" id="table-1" data-mode="columntoggle" data-filter="true" data-input="#searchForTable-1" class="ui-responsive">
 				<thead>
 					<tr>
-						<th>A</th>
-						<th data-priority="1">B</th>
-						<th data-priority="2">C</th>
+						<th>Nome Usuário</th>
+						<th data-priority="1">Nome do Endereço</th>
+						<th data-priority="2">Nome do Terminal</th>
+						<th>Excluir</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>a0</td>
-						<td>b0</td>
-						<td>c0</td>
-					</tr>
-					<tr>
-						<td>a1</td>
-						<td>b1</td>
-						<td>c1</td>
-					</tr>
-					<tr>
-						<td>a2</td>
-						<td>b2</td>
-						<td>c2</td>
-					</tr>
+					linhaTag
 				</tbody>
 			</table>
 		</div>
