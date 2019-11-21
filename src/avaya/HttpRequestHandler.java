@@ -1,7 +1,12 @@
 package avaya;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -76,6 +81,92 @@ public class HttpRequestHandler implements HttpHandler {
 		
 		if(uri.getPath().equals("/Avaya/rest/ramal/config")) {
 			String htmlConf = "";
+			String confServidor = "";
+			String endServidorAvaya = "";
+			String portaServidorAvaya = "";
+			String dominio = "";
+			String jsonConfig = "";
+			
+			if(requestContent.toString().trim().length()>0) {
+				
+				String variavelValor[] = requestContent.toString().split("&");
+				
+				for (String campo : variavelValor) {
+					String conf[] = campo.split("=");
+					if(conf!=null&&conf.length>0) {
+						if(conf[0].equals("endServidorAvaya")) {
+							endServidorAvaya = conf[1];
+						}
+						else if(conf[0].equals("confServidor")) {
+							confServidor = conf[1];
+						}
+						else if(conf[0].equals("portaServidorAvaya")) {
+							portaServidorAvaya = conf[1];
+						}
+						else if(conf[0].equals("dominio")) {
+							dominio = conf[1];
+						}	
+					}
+					
+				}
+				
+			}
+			
+			if(confServidor.equals("true")) {
+				Configuracao conf = null;
+				List<Usuario> listaUsuarios = null;
+				try {
+					BufferedReader rd = new BufferedReader(new FileReader("config.json"));
+					while (rd.ready()) {
+						jsonConfig = jsonConfig + rd.readLine();
+					}
+					rd.close();
+				}
+				catch (Exception e) {
+					// TODO: handle exception
+				}
+				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+				if(jsonConfig.length()>0) {
+					conf = gson.fromJson(jsonConfig, Configuracao.class);
+				}
+				else
+					conf = new Configuracao();
+				
+				if(conf.getListaUsuarios()==null)
+					listaUsuarios = new ArrayList<>();
+				conf.setListaUsuarios(listaUsuarios);
+				conf.setNomeServidorAvaya(endServidorAvaya);
+				conf.setPortaServidorAvaya(portaServidorAvaya);
+				conf.setDominio(dominio);
+				
+				jsonConfig = gson.toJson(conf);
+				BufferedWriter bw = new BufferedWriter(new FileWriter("config.json"));
+				bw.write(jsonConfig);
+				bw.close();
+				
+			}
+			else {
+				try {
+					BufferedReader rd = new BufferedReader(new FileReader("config.json"));
+					while (rd.ready()) {
+						jsonConfig = jsonConfig + rd.readLine();
+					}
+					rd.close();
+				}
+				catch (Exception e) {
+					// TODO: handle exception
+				}
+				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+				if(jsonConfig.length()>0) {
+					conf = gson.fromJson(jsonConfig, Configuracao.class);
+					endServidorAvaya = conf.getNomeServidorAvaya();
+					portaServidorAvaya = conf.getPortaServidorAvaya();
+					dominio = conf.getDominio();
+				}
+				
+			}
+						
+			
 			try {
 				
 				String arq = getClass().getResource("/html/Config.html").toString();
@@ -101,7 +192,24 @@ public class HttpRequestHandler implements HttpHandler {
 
 				}
 				brConf.close();
-				ok(t,htmlConf);
+				
+				
+				htmlConf = htmlConf.replace("endServidorAvayaTag", endServidorAvaya);
+				htmlConf = htmlConf.replace("portaServidorAvayaTag", portaServidorAvaya);
+				htmlConf = htmlConf.replace("dominioTag", dominio);
+				
+				
+				
+				
+				try {
+				    byte[] bs = htmlConf.getBytes("UTF-8");
+				    t.sendResponseHeaders(200, bs.length);
+				    OutputStream os = t.getResponseBody();
+				    os.write(bs);
+				} catch (IOException ex) {
+				    
+				}
+				
 			} catch (Exception e) {
 				System.err.println(e.getMessage());
 			}
