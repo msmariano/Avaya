@@ -43,13 +43,13 @@
 	
 	
 <meta charset="UTF-8">
-<title>Configuração</title>
+<title>Configuracao</title>
 </head>
 <body onload="mensagem();">
 	<div data-role="tabs" id="tabs-1">
 		
 		<div id="tab-1a" class="ui-body-d ui-content">
-		<b>Configuração do Servidor</b> 
+		<b>Configuracao do Servidor</b> 
 		<form method="post" action="/Avaya/rest/ramal/config">
 			<input type = "hidden" name="confServidor" id="confServidor" value="true" />
 			<input type = "hidden" name="confRamal" id="confRamal" value="false" />
@@ -77,7 +77,7 @@
 	
 		</div>
 		<div id="tab-1b" class="ui-body-d ui-content">
-			<b>Configuração do Ramal</b> 
+			<b>Configuracao do Ramal</b> 
 			<form method="post" action="/Avaya/rest/ramal/config" id="FormRamal">
 				<input type = "hidden" name="confServidor" id="confServidor" value="false" />
 				<input type = "hidden" name="confRamal" id="confRamal" value="true" />
@@ -89,7 +89,7 @@
 				<input type = "hidden" name="editarRamal" id="editarRamal"  />
 				
 				<div class="ui-field-contain">
-					<label for="text-3">Nome do Usuário:</label>
+					<label for="text-3">Nome do Usuario:</label>
 					<input name="nomeUsuario" id="nomeUsuario" data-clear-btn="true" value="tagNomeUsuario" type="text"/>
 				</div>
 				<div class="ui-field-contain">
@@ -102,7 +102,7 @@
 				</div>
 				
 				<div class="ui-field-contain">
-					<label for="text-5">Nome do Endereço de Origem:</label>
+					<label for="text-5">Nome do Endereco de Origem:</label>
 					<input name="origAddressName" id="origAddressName" data-clear-btn="true" value="tagOrigAddressName" type="text"/>
 				</div>
 				
@@ -117,8 +117,8 @@
 			<table data-role="table" id="table-1" border="1" data-mode="columntoggle" data-filter="true" data-input="#searchForTable-1" class="ui-responsive">
 				<thead>
 					<tr>
-						<th>Nome Usuário</th>
-						<th data-priority="1">Nome do Endereço</th>
+						<th>Nome Usuario</th>
+						<th data-priority="1">Nome do Endereco</th>
 						<th data-priority="2">Nome do Terminal</th>
 						<th>Excluir</th>
 						<th>Editar</th>
