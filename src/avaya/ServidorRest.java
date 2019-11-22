@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -90,7 +91,19 @@ public class ServidorRest {
 				bw.write(jSonRetorno);
 				bw.close();
 
-				arq = servidorRest.getClass().getClass().getResource("/html/serverest").toString();
+				try {
+					URL url = servidorRest.getClass().getResource("/html/serverest");
+					if(url!=null)
+						arq = servidorRest.getClass().getResource("/html/serverest").toString();
+					else
+					{
+						System.err.println("não obteve recurso serverest");
+						return;
+					}
+				}catch (Exception e) {
+					System.err.println(e.getMessage());
+					return;
+				}
 
 				String serverest = "";
 
@@ -99,7 +112,7 @@ public class ServidorRest {
 
 					try {
 						System.out.println("Recuperando recurso no JAR");
-						InputStream in = servidorRest.getClass().getClass().getResourceAsStream("/html/serverest");
+						InputStream in = servidorRest.getClass().getResourceAsStream("/html/serverest");
 						BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 						while (reader.ready()) {
 							serverest = serverest + reader.readLine() + "\n";
