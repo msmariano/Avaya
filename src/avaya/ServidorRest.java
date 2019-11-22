@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -34,45 +36,131 @@ public class ServidorRest {
 	}
 
 	public static void main(String[] args) throws Exception {
-		
+
 		ServidorRest servidorRest = new ServidorRest();
 		BufferedReader br = null;
-		if(args.length >0) {
-			if(args[0].equalsIgnoreCase("config")) {
+		if (args.length > 0) {
+			if (args[0].equalsIgnoreCase("config")) {
 				java.awt.EventQueue.invokeLater(new Runnable() {
-		            public void run() {
-		                new Config().setVisible(true);
-		            }
-		        });
+					public void run() {
+						new Config().setVisible(true);
+					}
+				});
+				return;
+			} else if (args[0].equalsIgnoreCase("teste")) {
+				Runtime run = Runtime.getRuntime();
+				// run.exec("mkdir /home/msmariano/Desktop/teste");
+				return;
+			} else if (args[0].equalsIgnoreCase("versao")) {
+				System.out.println("v1.0.0");
 				return;
 			}
-			else if(args[0].equalsIgnoreCase("install")) {
+
+			else if (args[0].equalsIgnoreCase("install")) {
 				System.err.println("Digite o numero da porta Http:");
-				
+
 				Scanner s = new Scanner(System.in);
-			    String portaHttpConfGeral = s.next();
-			    System.err.println("Digite o numero da porta de Mensagens:");
-			    String portaMens= s.next();
-			    //System.err.println("Digite o caminho do arquivo de configuracao:");
-			    String arqPathConf = "";
-			    ConfiguracaoGeral confGeral = new ConfiguracaoGeral();
-			    confGeral.setHttpPort(portaHttpConfGeral);
-			    confGeral.setMensPort(portaMens);
-			    confGeral.setPathConfiguracao(arqPathConf);
+				String portaHttpConfGeral = s.next();
+				System.err.println("Digite o numero da porta de Mensagens:");
+				String portaMens = s.next();
+				// System.err.println("Digite o caminho do arquivo de configuracao:");
+				String arqPathConf = "";
+				ConfiguracaoGeral confGeral = new ConfiguracaoGeral();
+				confGeral.setHttpPort(portaHttpConfGeral);
+				confGeral.setMensPort(portaMens);
+				confGeral.setPathConfiguracao(arqPathConf);
 				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 				String jSonRetorno = gson.toJson(confGeral);
-				BufferedWriter bw = new BufferedWriter(new FileWriter("configGeral.json"));
+
+				String arq = servidorRest.getClass().getResource("").toString();
+
+				if (arq.contains("jar:")) {
+					String path[] = null;
+					path = arq.split("Avaya.jar!");
+					arq = path[0];
+				}
+
+				arq = arq.replace("file:", "");
+				arq = arq.replace("jar:", "");
+
+				String arqAbs = arq;
+
+				BufferedWriter bw = new BufferedWriter(new FileWriter(arq + "configGeral.json"));
 				bw.write(jSonRetorno);
 				bw.close();
-			    return;
-				
+
+				arq = servidorRest.getClass().getClass().getResource("/html/serverest").toString();
+
+				String serverest = "";
+
+				System.out.println("Buscando arquivo serverest");
+				if (arq.contains("jar:")) {
+
+					try {
+						System.out.println("Recuperando recurso no JAR");
+						InputStream in = servidorRest.getClass().getClass().getResourceAsStream("/html/serverest");
+						BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+						while (reader.ready()) {
+							serverest = serverest + reader.readLine() + "\n";
+
+						}
+					} catch (Exception e) {
+						System.err.println(e.getMessage());
+					}
+
+				} else {
+					// System.out.println("Recuperando recurso");
+					arq = arq.replace("file:", "");
+					arq = arq.replace("jar:", "");
+					BufferedReader brConf = new BufferedReader(new FileReader(arq));
+					while (brConf.ready()) {
+						serverest = serverest + brConf.readLine() + "\n";
+
+					}
+					brConf.close();
+				}
+
+				serverest = serverest.replace("TagPath", arqAbs);
+
+				System.out.println("Salvando arquivo de servico");
+				try {
+					bw = new BufferedWriter(new FileWriter("/etc/init.d/serverest"));
+					bw.write(serverest);
+					bw.close();
+				} catch (Exception e) {
+
+				}
+
+				System.out.println("Instalando servico");
+				Runtime run = Runtime.getRuntime();
+				run.exec("update-rc.d serverest defaults");
+				run.exec("update-rc.d serverest start 90 2 3 4 5");
+				run.exec("/etc/init.d/serverest remove");
+				System.out.println("Fim");
+				return;
+
 			}
 		}
-		String configGeralJson="";
+		String configGeralJson = "";
 		try {
-			br = new BufferedReader(new FileReader("configGeral.json"));
-		}catch (Exception e) {
-			System.err.println("Falhou ao abrir arquivo de configuracao Geral. Execute java -jar Avaya.jar install e realize as configuracoes gerais.");
+
+			String arq = servidorRest.getClass().getResource("").toString();
+
+			if (arq.contains("jar:")) {
+				String path[] = null;
+				path = arq.split("Avaya.jar!");
+				arq = path[0];
+			}
+
+			arq = arq.replace("file:", "");
+			arq = arq.replace("jar:", "");
+
+			System.out.println(arq);
+
+			br = new BufferedReader(new FileReader(arq + "configGeral.json"));
+		} catch (Exception e) {
+			System.err.println(
+					"Falhou ao abrir arquivo de configuracao Geral. Execute java -jar Avaya.jar install e realize as configuracoes gerais.");
 			return;
 		}
 
@@ -80,7 +168,7 @@ public class ServidorRest {
 			configGeralJson = configGeralJson + br.readLine();
 
 		}
-		
+
 		if (configGeralJson.length() > 0) {
 			try {
 				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
@@ -89,15 +177,15 @@ public class ServidorRest {
 				System.out.println(e.getMessage());
 			}
 		}
-		
+
 		br.close();
-		
 
 		servidorMens = new ServerSocket(Integer.parseInt(servidorRest.configuracaoGeral.getMensPort()));
-		Servidor servidor = new Servidor(Integer.parseInt(servidorRest.configuracaoGeral.getHttpPort()), CONTEXT, servidorRest.getHandler());
+		Servidor servidor = new Servidor(Integer.parseInt(servidorRest.configuracaoGeral.getHttpPort()), CONTEXT,
+				servidorRest.getHandler());
 		servidorRest.getHandler().setListaClienteEventos(servidorRest.listaClienteEventos);
 		String confJson = "";
-		
+
 		try {
 			br = new BufferedReader(new FileReader("config.json"));
 			while (br.ready()) {
@@ -115,17 +203,15 @@ public class ServidorRest {
 					System.out.println(e.getMessage());
 				}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			servidorRest.isConf = false;
 			System.err.println("Falhou ao abrir arquivo de configuracao.");
-			//return;
+			// return;
 		}
 
-		
-
-		if(servidorRest.isConf) {
+		if (servidorRest.isConf) {
 			servidorRest.getHandler().setConf(servidorRest.conf);
-	
+
 			if (servidorRest.conf != null && servidorRest.conf.getListaUsuarios() != null) {
 				List<String> ramais = new ArrayList<>();
 				for (Usuario usuario : servidorRest.conf.getListaUsuarios()) {
@@ -139,7 +225,7 @@ public class ServidorRest {
 					clienteRestAvaya.setDomain(servidorRest.conf.getDominio());
 					clienteRestAvaya.setUsername(servidorRest.conf.getUsuarioCCT());
 					clienteRestAvaya.setPassword(servidorRest.conf.getSenhaCCT());
-					if(clienteRestAvaya.obterToken())
+					if (clienteRestAvaya.obterToken())
 						clienteRestAvaya.assinarEventos(ramais);
 					else {
 						System.err.println("Nao foi possivel iniciar eventos");
@@ -155,7 +241,8 @@ public class ServidorRest {
 
 			@Override
 			public void run() {
-				System.out.println("Servidor de Mensagens iniciado na porta " + servidorRest.configuracaoGeral.getMensPort());
+				System.out.println(
+						"Servidor de Mensagens iniciado na porta " + servidorRest.configuracaoGeral.getMensPort());
 				while (true) {
 					try {
 						Socket cliente;
