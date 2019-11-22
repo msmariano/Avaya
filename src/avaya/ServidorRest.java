@@ -73,6 +73,7 @@ public class ServidorRest {
 				String jSonRetorno = gson.toJson(confGeral);
 
 				String arq = servidorRest.getClass().getResource("").toString();
+				
 
 				if (arq.contains("jar:")) {
 					String path[] = null;
