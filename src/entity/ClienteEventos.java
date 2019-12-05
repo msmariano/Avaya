@@ -169,6 +169,75 @@ public class ClienteEventos implements Runnable {
 								clienteRestAvaya.atender();
 
 							}
+							//[monitorstart;device;TMonitorType[0=mtDevice|1=mtTrunk]]
+							else if (parse[0].equalsIgnoreCase("monitorstart")) {
+								System.out.println("Setando socket para id " + parse[1] + " porta " + socketCliente.getPort());
+
+								for (ClienteEventos cli : listaClienteEventos) {
+									if (cli.getId() != null && cli.getId().toLowerCase().equals(parse[1].toLowerCase())) {
+										BufferedWriter saida = new BufferedWriter(
+												new OutputStreamWriter(socketCliente.getOutputStream()));
+										saida.write("ramal ja esta sendo monitorado!\n");
+										saida.flush();
+										saida.close();
+										try {
+											socketCliente.close();
+										} catch (IOException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+										listaClienteEventos.remove(this);
+										return;
+									}
+								}
+
+								boolean isFind = false;
+								for (Usuario usuario : conf.getListaUsuarios()) {
+									if (usuario.getOrigTerminalName().equals(parse[1])) {
+										usuarioEvento = usuario;
+										isFind = true;
+										break;
+									}
+								}
+
+								if (!isFind) {
+									retorno("monitoracao;ramal nao esta na lista de configuracao;error");
+									try {
+										socketCliente.close();
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									listaClienteEventos.remove(this);
+									return;
+
+								}
+
+								clienteRestAvaya.setDomain(conf.getDominio());
+								clienteRestAvaya.setServidorEnd(conf.getNomeServidorAvaya());
+								clienteRestAvaya.setServidorPorta(conf.getPortaServidorAvaya());
+								clienteRestAvaya.setUsername(usuarioEvento.getNomeUsuario());
+								clienteRestAvaya.setPassword(usuarioEvento.getSenhaUsuario());
+								clienteRestAvaya.setTerminalName(usuarioEvento.getOrigTerminalName());
+								clienteRestAvaya.setAdressName(usuarioEvento.getOrigAddressName());
+								if (clienteRestAvaya.obterToken()) {
+									ativado = true;
+									this.id = parse[1];
+									retorno("monitoracao;"+clienteRestAvaya.getSsotoken().getUser().getSsoTokenValue()+";ok");
+								} else {
+									retorno("monitoracao;nao foi possivel obter token;error");
+									try {
+										socketCliente.close();
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									listaClienteEventos.remove(this);
+									return;
+
+								}
+								
+							}
 
 							continue;
 						}
