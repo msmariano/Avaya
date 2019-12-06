@@ -143,7 +143,7 @@ public class HttpClient {
 
 			con.setUseCaches(false);
 		} catch (Exception e) {
-
+			System.out.println("HttpURLConnection: "+e.getMessage());
 		}
 
 		return con;

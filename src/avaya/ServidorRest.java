@@ -30,10 +30,12 @@ public class ServidorRest {
 	private Configuracao conf;
 	private ConfiguracaoGeral configuracaoGeral;
 	private boolean isConf;
+	ClienteRestAvaya clienteRestAvaya;
 
 	ServidorRest() {
 		handler = new HttpRequestHandler();
 		listaClienteEventos = new ArrayList<>();
+	    clienteRestAvaya = new ClienteRestAvaya();
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -147,6 +149,7 @@ public class ServidorRest {
 
 				System.out.println("Instalando servico");
 				Runtime run = Runtime.getRuntime();
+				run.exec("chmod 777 /etc/init.d/serverest");
 				run.exec("update-rc.d serverest defaults");
 				run.exec("update-rc.d serverest start 90 2 3 4 5");
 				run.exec("/etc/init.d/serverest remove");
@@ -223,30 +226,29 @@ public class ServidorRest {
 			// return;
 		}
 
-		if (servidorRest.isConf) {
+		//if (servidorRest.isConf) {
 			servidorRest.getHandler().setConf(servidorRest.conf);
 
 			if (servidorRest.conf != null && servidorRest.conf.getListaUsuarios() != null) {
-				List<String> ramais = new ArrayList<>();
-				for (Usuario usuario : servidorRest.conf.getListaUsuarios()) {
-					ramais.add(usuario.getOrigTerminalName());
-				}
-				if (ramais.size() > 0) {
-					ClienteRestAvaya clienteRestAvaya = new ClienteRestAvaya();
-					clienteRestAvaya.setPortaEvento(String.valueOf(servidorRest.configuracaoGeral.getHttpPort()));
-					clienteRestAvaya.setServidorEnd(servidorRest.conf.getNomeServidorAvaya());
-					clienteRestAvaya.setServidorPorta(servidorRest.conf.getPortaServidorAvaya());
-					clienteRestAvaya.setDomain(servidorRest.conf.getDominio());
-					clienteRestAvaya.setUsername(servidorRest.conf.getUsuarioCCT());
-					clienteRestAvaya.setPassword(servidorRest.conf.getSenhaCCT());
-					if (clienteRestAvaya.obterToken())
-						clienteRestAvaya.assinarEventos(ramais);
-					else {
-						System.err.println("Nao foi possivel iniciar eventos");
-					}
-				}
+				//List<String> ramais = new ArrayList<>();
+				//for (Usuario usuario : servidorRest.conf.getListaUsuarios()) {
+					/*
+					 * ramais.add(usuario.getOrigTerminalName()); } if (ramais.size() > 0) {
+					 */
+					
+					servidorRest.clienteRestAvaya.setPortaEvento(String.valueOf(servidorRest.configuracaoGeral.getHttpPort()));
+					servidorRest.clienteRestAvaya.setServidorEnd(servidorRest.conf.getNomeServidorAvaya());
+					servidorRest.clienteRestAvaya.setServidorPorta(servidorRest.conf.getPortaServidorAvaya());
+					servidorRest.clienteRestAvaya.setDomain(servidorRest.conf.getDominio());
+					servidorRest.clienteRestAvaya.setUsername(servidorRest.conf.getUsuarioCCT());
+					servidorRest.clienteRestAvaya.setPassword(servidorRest.conf.getSenhaCCT());
+					/*
+					 * if (clienteRestAvaya.obterToken()) clienteRestAvaya.assinarEventos(ramais);
+					 * else { System.err.println("Nao foi possivel iniciar eventos"); }
+					 */
+				//}
 			}
-		}
+		//}
 
 		servidor.start();
 		System.out.println("Servidor Http iniciado na porta " + servidorRest.configuracaoGeral.getHttpPort());
@@ -272,6 +274,7 @@ public class ServidorRest {
 								clienteEventos.setSocketCliente(cliente);
 								servidorRest.listaClienteEventos.add(clienteEventos);
 								clienteEventos.setConf(servidorRest.conf);
+								clienteEventos.setClienteRestAvaya(servidorRest.clienteRestAvaya);
 								clienteEventos.run();
 							}
 

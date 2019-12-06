@@ -56,14 +56,19 @@ public class ClienteRestAvaya {
 		loginCCT.getUser().setUsername(username);
 		String inputJson = gson.toJson(loginCCT);
 		System.out.println(inputJson);
-		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta, "/session");
+		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta, "/session");
 		if (con != null) {
-			String jsonRetorno = HttpClient.postMethod(con, inputJson);
-			System.out.println(jsonRetorno);
-			ssotoken = gson.fromJson(jsonRetorno, TokenRest.class);
-			return true;
+			try {
+				String jsonRetorno = HttpClient.postMethod(con, inputJson);
+				System.out.println(jsonRetorno);
+				ssotoken = gson.fromJson(jsonRetorno, TokenRest.class);
+				return true;
+			}
+			catch (Exception e) {
+				System.err.println(e.getMessage());
+			}
 		}
-		System.err.println("Erro ao obter token.");
+		System.err.println("Erro ao obter token."+servidorEnd + ":" + servidorPorta);
 		return false;
 
 	}
@@ -89,7 +94,7 @@ public class ClienteRestAvaya {
 
 			System.out.println(inputJson);
 
-			con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
+			con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
 					"/subscriptions?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 			if (con != null) {
 				String jsonRetorno = HttpClient.postMethod(con, inputJson);
@@ -115,7 +120,7 @@ public class ClienteRestAvaya {
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
 		System.out.println(inputJson);
-		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
+		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
 				"/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
@@ -140,7 +145,7 @@ public class ClienteRestAvaya {
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
 		System.out.println(inputJson);
-		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
+		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
 				"/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
@@ -169,7 +174,7 @@ public class ClienteRestAvaya {
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
 		System.out.println(inputJson);
-		con = HttpClient.httpConnect(servidorEnd + ":" + servidorPorta,
+		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
 				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);

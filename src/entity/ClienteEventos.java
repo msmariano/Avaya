@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 import avaya.ClienteRestAvaya;
@@ -117,6 +118,10 @@ public class ClienteEventos implements Runnable {
 							ativado = true;
 							this.id = parse[1];
 							retorno("monitoracao;"+clienteRestAvaya.getSsotoken().getUser().getSsoTokenValue()+";ok");
+							List<String> listaEntityNames = new ArrayList<>();
+							listaEntityNames.add(usuarioEvento.getOrigTerminalName());
+							
+							clienteRestAvaya.assinarEventos(listaEntityNames);
 						} else {
 							retorno("monitoracao;nao foi possivel obter token;error");
 							try {
@@ -223,6 +228,8 @@ public class ClienteEventos implements Runnable {
 								if (clienteRestAvaya.obterToken()) {
 									ativado = true;
 									this.id = parse[1];
+									List<String> listaEntityNames = new ArrayList<>();
+									listaEntityNames.add(usuarioEvento.getOrigTerminalName());
 									retorno("monitoracao;"+clienteRestAvaya.getSsotoken().getUser().getSsoTokenValue()+";ok");
 								} else {
 									retorno("monitoracao;nao foi possivel obter token;error");

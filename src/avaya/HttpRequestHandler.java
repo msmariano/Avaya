@@ -123,7 +123,12 @@ public class HttpRequestHandler implements HttpHandler {
 
 			if (requestContent.toString().trim().length() > 0) {
 
-				String variavelValor[] = requestContent.toString().split("&");
+				String entrada = requestContent.toString();
+				entrada = entrada.replace("%40","@");
+				entrada = entrada.replace("%3A",":");
+				
+				
+				String variavelValor[] = entrada.split("&");
 
 				for (String campo : variavelValor) {
 					String conf[] = campo.split("=");
