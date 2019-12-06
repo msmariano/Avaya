@@ -124,8 +124,17 @@ public class HttpRequestHandler implements HttpHandler {
 			if (requestContent.toString().trim().length() > 0) {
 
 				String entrada = requestContent.toString();
-				entrada = entrada.replace("%40","@");
-				entrada = entrada.replace("%3A",":");
+				//entrada = entrada.replace("%40","@");
+				//entrada = entrada.replace("%3A",":");
+				
+
+				for(int i=32;i<127;i++) {
+					String hex = "%"+String.format("%X", i);
+					String simbolo = String.format("%c", i);
+					entrada = entrada.replace(hex,simbolo);
+				}
+				
+				
 				
 				
 				String variavelValor[] = entrada.split("&");

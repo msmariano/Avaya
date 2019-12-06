@@ -39,6 +39,15 @@ public class ServidorRest {
 	}
 
 	public static void main(String[] args) throws Exception {
+		
+		/*
+		 * String entrada="%40 %3A";
+		 * 
+		 * for(int i=33;i<127;i++) { String hex = "%"+String.format("%X", i); String
+		 * simbolo = String.format("%c", i); entrada = entrada.replace(hex,simbolo); }
+		 * 
+		 * System.out.println(entrada);
+		 */
 
 		ServidorRest servidorRest = new ServidorRest();
 		BufferedReader br = null;
