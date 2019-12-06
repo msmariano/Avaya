@@ -159,11 +159,12 @@ public class ClienteEventos implements Runnable {
 									retorno("makecall;ramal sem token;error");
 								}
 
-							} else if (parse[0].equalsIgnoreCase("clearconnection")) {
+							} else if (parse[0].equalsIgnoreCase("dropcall")) {
 								ContactIdRest contactIdRest = new ContactIdRest();
 								ContactId contactId  = new ContactId();
 								contactId.setContactId(parse[2]);
 								contactIdRest.setContact(contactId);
+								clienteRestAvaya.setContactId(contactIdRest);
 								clienteRestAvaya.desligar();
 
 							} else if (parse[0].equalsIgnoreCase("answercall")) {
@@ -171,6 +172,7 @@ public class ClienteEventos implements Runnable {
 								ContactId contactId  = new ContactId();
 								contactId.setContactId(parse[2]);
 								contactIdRest.setContact(contactId);
+								clienteRestAvaya.setContactId(contactIdRest);
 								clienteRestAvaya.atender();
 
 							}

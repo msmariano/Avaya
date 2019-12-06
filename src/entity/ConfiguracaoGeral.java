@@ -5,6 +5,7 @@ public class ConfiguracaoGeral {
 	private String pathConfiguracao;
 	private String httpPort;
 	private String mensPort;
+	private String ipServidor;
 	
 	
 	public String getHttpPort() {
@@ -24,6 +25,12 @@ public class ConfiguracaoGeral {
 	}
 	public void setPathConfiguracao(String pathConfiguracao) {
 		this.pathConfiguracao = pathConfiguracao;
+	}
+	public String getIpServidor() {
+		return ipServidor;
+	}
+	public void setIpServidor(String ipServidor) {
+		this.ipServidor = ipServidor;
 	}
 	
 }

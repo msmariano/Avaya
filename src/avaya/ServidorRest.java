@@ -67,11 +67,14 @@ public class ServidorRest {
 				System.err.println("Digite o numero da porta de Mensagens:");
 				String portaMens = s.next();
 				// System.err.println("Digite o caminho do arquivo de configuracao:");
+				System.err.println("Digite o ip do Servidor:");
+				String ipServidor = s.next();
 				String arqPathConf = "";
 				ConfiguracaoGeral confGeral = new ConfiguracaoGeral();
 				confGeral.setHttpPort(portaHttpConfGeral);
 				confGeral.setMensPort(portaMens);
 				confGeral.setPathConfiguracao(arqPathConf);
+				confGeral.setIpServidor(ipServidor);
 				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 				String jSonRetorno = gson.toJson(confGeral);
 
@@ -198,6 +201,7 @@ public class ServidorRest {
 		br.close();
 
 		servidorMens = new ServerSocket(Integer.parseInt(servidorRest.configuracaoGeral.getMensPort()));
+		servidorRest.clienteRestAvaya.setIpServidor(servidorRest.configuracaoGeral.getIpServidor());
 		Servidor servidor = new Servidor(Integer.parseInt(servidorRest.configuracaoGeral.getHttpPort()), CONTEXT,
 				servidorRest.getHandler());
 		servidorRest.getHandler().setListaClienteEventos(servidorRest.listaClienteEventos);
