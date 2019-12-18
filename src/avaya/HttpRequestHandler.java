@@ -101,8 +101,12 @@ public class HttpRequestHandler implements HttpHandler {
 			String tagSenhaUsuario="";
 			String tagOrigTerminalName="";
 			String tagOrigAddressName="";
+			
+			System.out.println("debug1");
 
 			try {
+				
+				System.out.println("debug4");
 				BufferedReader rd = new BufferedReader(new FileReader("config.json"));
 				while (rd.ready()) {
 					jsonConfig = jsonConfig + rd.readLine();
@@ -114,25 +118,31 @@ public class HttpRequestHandler implements HttpHandler {
 				} else
 					conf = new Configuracao();
 			} catch (Exception e) {
-				// TODO: handle exception
+				System.out.println("debug5");
 			}
+			if(conf == null)
+			{
+				conf = new Configuracao();
+			}
+			
 			if (conf.getListaUsuarios() == null) {
 				listaUsuarios = new ArrayList<>();
 				conf.setListaUsuarios(listaUsuarios);
 			}
-
+			System.out.println("debug2");
+			
 			if (requestContent.toString().trim().length() > 0) {
 
+				System.out.println("debug3");
 				String entrada = requestContent.toString();
 				//entrada = entrada.replace("%40","@");
 				//entrada = entrada.replace("%3A",":");
 				
 
-				for(int i=32;i<127;i++) {
-					String hex = "%"+String.format("%X", i);
-					String simbolo = String.format("%c", i);
-					entrada = entrada.replace(hex,simbolo);
-				}
+				
+				 for(int i=32;i<127;i++) { String hex = "%"+String.format("%X", i); String
+				 simbolo = String.format("%c", i); entrada = entrada.replace(hex,simbolo); }
+				 
 				
 				
 				

@@ -49,6 +49,7 @@ public class ServidorRest {
 		 * System.out.println(entrada);
 		 */
 
+		System.err.println("carregando ServidorRest");
 		ServidorRest servidorRest = new ServidorRest();
 		BufferedReader br = null;
 		if (args.length > 0) {
