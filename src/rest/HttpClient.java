@@ -10,6 +10,8 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import util.Log;
+
 public class HttpClient {
 
 	public static String deleteMethod(HttpURLConnection con, String contentBody) {
@@ -32,7 +34,7 @@ public class HttpClient {
 			if (con.getResponseCode() != 200) {
 				BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
 				while ((output = br.readLine()) != null) {
-					System.out.println(output);
+					//Log.grava(output);
 					responseContent.append(output);
 				}
 
@@ -40,7 +42,7 @@ public class HttpClient {
 				BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
 				output = null;
 				while ((output = br.readLine()) != null) {
-					System.out.println(output);
+					//Log.grava(output);
 					responseContent.append(output);
 				}
 			}
@@ -76,7 +78,7 @@ public class HttpClient {
 					br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
 					if (br != null) {
 						while ((output = br.readLine()) != null) {
-							System.out.println(output);
+							Log.grava(output);
 							responseContent.append(output);
 						}
 
@@ -87,7 +89,7 @@ public class HttpClient {
 				br = new BufferedReader(new InputStreamReader(con.getInputStream()));
 				output = null;
 				while ((output = br.readLine()) != null) {
-					System.out.println(output);
+					//Log.grava(output);
 					responseContent.append(output);
 				}
 			}
@@ -116,7 +118,7 @@ public class HttpClient {
 			String output = null;
 
 			while ((output = br.readLine()) != null) {
-				System.out.println(output);
+				//Log.grava(output);
 				responseContent.append(output);
 			}
 		} catch (Exception e) {
@@ -143,7 +145,7 @@ public class HttpClient {
 
 			con.setUseCaches(false);
 		} catch (Exception e) {
-			System.out.println("HttpURLConnection: "+e.getMessage());
+			//Log.grava("HttpURLConnection: "+e.getMessage());
 		}
 
 		return con;

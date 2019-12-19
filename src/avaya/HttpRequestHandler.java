@@ -66,7 +66,7 @@ public class HttpRequestHandler implements HttpHandler {
 			br = new BufferedReader(new InputStreamReader(t.getRequestBody()));
 			if (br != null) {
 				while ((inputRequest = br.readLine()) != null) {
-					//System.out.println(inputRequest);
+					//Log.grava(inputRequest);
 					requestContent.append(inputRequest);
 				}
 
@@ -102,11 +102,11 @@ public class HttpRequestHandler implements HttpHandler {
 			String tagOrigTerminalName="";
 			String tagOrigAddressName="";
 			
-			System.out.println("debug1");
+			//Log.grava("debug1");
 
 			try {
 				
-				System.out.println("debug4");
+				//Log.grava("debug4");
 				BufferedReader rd = new BufferedReader(new FileReader("config.json"));
 				while (rd.ready()) {
 					jsonConfig = jsonConfig + rd.readLine();
@@ -118,7 +118,7 @@ public class HttpRequestHandler implements HttpHandler {
 				} else
 					conf = new Configuracao();
 			} catch (Exception e) {
-				System.out.println("debug5");
+				//Log.grava("debug5");
 			}
 			if(conf == null)
 			{
@@ -129,11 +129,11 @@ public class HttpRequestHandler implements HttpHandler {
 				listaUsuarios = new ArrayList<>();
 				conf.setListaUsuarios(listaUsuarios);
 			}
-			System.out.println("debug2");
+			//Log.grava("debug2");
 			
 			if (requestContent.toString().trim().length() > 0) {
 
-				System.out.println("debug3");
+				//Log.grava("debug3");
 				String entrada = requestContent.toString();
 				//entrada = entrada.replace("%40","@");
 				//entrada = entrada.replace("%3A",":");
@@ -254,7 +254,7 @@ public class HttpRequestHandler implements HttpHandler {
 				String arq = getClass().getResource("/html/Config.html").toString();
 
 				if (arq.contains("jar:")) {
-					//System.out.println("Recuperando recurso no JAR");
+					//Log.grava("Recuperando recurso no JAR");
 					InputStream in = getClass().getResourceAsStream("/html/Config.html");
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 					while (reader.ready()) {
@@ -266,7 +266,7 @@ public class HttpRequestHandler implements HttpHandler {
 					//return;
 				}
 				else {
-					//System.out.println("Recuperando recurso");
+					//Log.grava("Recuperando recurso");
 					arq = arq.replace("file:", "");
 					arq = arq.replace("jar:", "");
 					BufferedReader brConf = new BufferedReader(new FileReader(arq));
@@ -277,7 +277,7 @@ public class HttpRequestHandler implements HttpHandler {
 					brConf.close();
 				}
 				
-				//System.err.println("1");
+				//Log.grava("1");
 				
 				
 				if(conf.getNomeServidorAvaya()!=null)
@@ -301,7 +301,7 @@ public class HttpRequestHandler implements HttpHandler {
 				htmlConf = htmlConf.replace("tagOrigAddressName", tagOrigAddressName);
 				
 				
-				//System.err.println("2");
+				//Log.grava("2");
 
 				for (Usuario usuario : conf.getListaUsuarios()) {
 					usuarioTableHtml = usuarioTableHtml + "<tr><td>" + usuario.getNomeUsuario() + "</td><td>"
@@ -320,11 +320,11 @@ public class HttpRequestHandler implements HttpHandler {
 					OutputStream os = t.getResponseBody();
 					os.write(bs);
 				} catch (IOException ex) {
-					//System.err.println("2");
+					//Log.grava("2");
 				}
 
 			} catch (Exception e) {
-				//System.err.println(e.getMessage());
+				//Log.grava(e.getMessage());
 			}
 
 		} else if (uri.getPath().equals("/Avaya/rest/ramal/eventos")) {

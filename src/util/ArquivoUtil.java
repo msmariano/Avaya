@@ -27,7 +27,7 @@ public class ArquivoUtil {
 				json = json + linha;
 		}
 
-		System.out.println(json);
+		//Log.grava(json);
 
 		Configuracao conf = gson.fromJson(json, Configuracao.class);
 

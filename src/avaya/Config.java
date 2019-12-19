@@ -81,7 +81,7 @@ public class Config extends JFrame {
 				int i = file.showSaveDialog(null);
 				if (i != 1) {
 					File arquivo = file.getSelectedFile();
-					System.out.println();
+					//Log.grava();
 					ConfiguracaoGeral cg = new ConfiguracaoGeral();
 					cg.setPathConfiguracao(arquivo.getPath());
 					pathConfig.setText(arquivo.getPath());

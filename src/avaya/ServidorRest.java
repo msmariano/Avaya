@@ -20,6 +20,7 @@ import entity.ClienteEventos;
 import entity.Configuracao;
 import entity.ConfiguracaoGeral;
 import entity.Usuario;
+import util.Log;
 
 public class ServidorRest {
 
@@ -46,10 +47,10 @@ public class ServidorRest {
 		 * for(int i=33;i<127;i++) { String hex = "%"+String.format("%X", i); String
 		 * simbolo = String.format("%c", i); entrada = entrada.replace(hex,simbolo); }
 		 * 
-		 * System.out.println(entrada);
+		 * Log.grava(entrada);
 		 */
 
-		System.err.println("carregando ServidorRest");
+		//Log.grava("carregando ServidorRest");
 		ServidorRest servidorRest = new ServidorRest();
 		BufferedReader br = null;
 		if (args.length > 0) {
@@ -65,19 +66,19 @@ public class ServidorRest {
 				// run.exec("mkdir /home/msmariano/Desktop/teste");
 				return;
 			} else if (args[0].equalsIgnoreCase("versao")) {
-				System.out.println("v1.0.0");
+				Log.grava("v1.0.0");
 				return;
 			}
 
 			else if (args[0].equalsIgnoreCase("install")) {
-				System.err.println("Digite o numero da porta Http:");
+				Log.grava("Digite o numero da porta Http:");
 
 				Scanner s = new Scanner(System.in);
 				String portaHttpConfGeral = s.next();
-				System.err.println("Digite o numero da porta de Mensagens:");
+				Log.grava("Digite o numero da porta de Mensagens:");
 				String portaMens = s.next();
-				// System.err.println("Digite o caminho do arquivo de configuracao:");
-				System.err.println("Digite o ip do Servidor:");
+				// Log.grava("Digite o caminho do arquivo de configuracao:");
+				Log.grava("Digite o ip do Servidor:");
 				String ipServidor = s.next();
 				String arqPathConf = "";
 				ConfiguracaoGeral confGeral = new ConfiguracaoGeral();
@@ -112,21 +113,21 @@ public class ServidorRest {
 						arq = servidorRest.getClass().getResource("/html/serverest").toString();
 					else
 					{
-						System.err.println("não obteve recurso serverest");
+						//Log.grava("nao obteve recurso serverest");
 						return;
 					}
 				}catch (Exception e) {
-					System.err.println(e.getMessage());
+					//Log.grava(e.getMessage());
 					return;
 				}
 
 				String serverest = "";
 
-				System.out.println("Buscando arquivo serverest");
+				//Log.grava("Buscando arquivo serverest");
 				if (arq.contains("jar:")) {
 
 					try {
-						System.out.println("Recuperando recurso no JAR");
+						Log.grava("Recuperando recurso no JAR");
 						InputStream in = servidorRest.getClass().getResourceAsStream("/html/serverest");
 						BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 						while (reader.ready()) {
@@ -134,11 +135,11 @@ public class ServidorRest {
 
 						}
 					} catch (Exception e) {
-						System.err.println(e.getMessage());
+						//Log.grava(e.getMessage());
 					}
 
 				} else {
-					// System.out.println("Recuperando recurso");
+					// Log.grava("Recuperando recurso");
 					arq = arq.replace("file:", "");
 					arq = arq.replace("jar:", "");
 					BufferedReader brConf = new BufferedReader(new FileReader(arq));
@@ -151,7 +152,7 @@ public class ServidorRest {
 
 				serverest = serverest.replace("TagPath", arqAbs);
 
-				System.out.println("Salvando arquivo de servico");
+				//Log.grava("Salvando arquivo de servico");
 				try {
 					bw = new BufferedWriter(new FileWriter("/etc/init.d/serverest"));
 					bw.write(serverest);
@@ -160,13 +161,13 @@ public class ServidorRest {
 
 				}
 
-				System.out.println("Instalando servico");
+				//Log.grava("Instalando servico");
 				Runtime run = Runtime.getRuntime();
 				run.exec("chmod 777 /etc/init.d/serverest");
 				run.exec("update-rc.d serverest defaults");
 				run.exec("update-rc.d serverest start 90 2 3 4 5");
 				run.exec("/etc/init.d/serverest remove");
-				System.out.println("Fim");
+				//Log.grava("Fim");
 				return;
 
 			}
@@ -185,12 +186,12 @@ public class ServidorRest {
 			arq = arq.replace("file:", "");
 			arq = arq.replace("jar:", "");
 
-			System.out.println(arq);
+			//Log.grava(arq);
 
 			br = new BufferedReader(new FileReader(arq + "configGeral.json"));
 		} catch (Exception e) {
-			System.err.println(
-					"Falhou ao abrir arquivo de configuracao Geral. Execute java -jar Avaya.jar install e realize as configuracoes gerais.");
+			//Log.grava(
+			//		"Falhou ao abrir arquivo de configuracao Geral. Execute java -jar Avaya.jar install e realize as configuracoes gerais.");
 			return;
 		}
 
@@ -204,7 +205,7 @@ public class ServidorRest {
 				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 				servidorRest.configuracaoGeral = gson.fromJson(configGeralJson, ConfiguracaoGeral.class);
 			} catch (Exception e) {
-				System.out.println(e.getMessage());
+				//Log.grava(e.getMessage());
 			}
 		}
 
@@ -231,12 +232,12 @@ public class ServidorRest {
 					servidorRest.conf = gson.fromJson(confJson, Configuracao.class);
 					servidorRest.isConf = true;
 				} catch (Exception e) {
-					System.out.println(e.getMessage());
+					Log.grava(e.getMessage());
 				}
 			}
 		} catch (Exception e) {
 			servidorRest.isConf = false;
-			System.err.println("Falhou ao abrir arquivo de configuracao.");
+			Log.grava("Falhou ao abrir arquivo de configuracao.");
 			// return;
 		}
 
@@ -258,27 +259,27 @@ public class ServidorRest {
 					servidorRest.clienteRestAvaya.setPassword(servidorRest.conf.getSenhaCCT());
 					/*
 					 * if (clienteRestAvaya.obterToken()) clienteRestAvaya.assinarEventos(ramais);
-					 * else { System.err.println("Nao foi possivel iniciar eventos"); }
+					 * else { Log.grava("Nao foi possivel iniciar eventos"); }
 					 */
 				//}
 			}
 		//}
 
 		servidor.start();
-		System.out.println("Servidor Http iniciado na porta " + servidorRest.configuracaoGeral.getHttpPort());
+		//Log.grava("Servidor Http iniciado na porta " + servidorRest.configuracaoGeral.getHttpPort());
 
 		new Thread() {
 
 			@Override
 			public void run() {
-				System.out.println(
-						"Servidor de Mensagens iniciado na porta " + servidorRest.configuracaoGeral.getMensPort());
+				//Log.grava(
+				//		"Servidor de Mensagens iniciado na porta " + servidorRest.configuracaoGeral.getMensPort());
 				while (true) {
 					try {
 						Socket cliente;
 						cliente = servidorMens.accept();
-						System.out.println("Cliente conectado: " + cliente.getInetAddress().getHostAddress() + " porta "
-								+ cliente.getPort());
+						//Log.grava("Cliente conectado: " + cliente.getInetAddress().getHostAddress() + " porta "
+						//		+ cliente.getPort());
 						new Thread() {
 							@Override
 							public void run() {
