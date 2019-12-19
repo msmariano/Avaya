@@ -22,6 +22,7 @@ import entity.SubscriptionDetails;
 import entity.TokenRest;
 import entity.User;
 import rest.HttpClient;
+import util.Log;
 
 public class ClienteRestAvaya {
 
@@ -56,20 +57,20 @@ public class ClienteRestAvaya {
 		loginCCT.getUser().setPassword(password);
 		loginCCT.getUser().setUsername(username);
 		String inputJson = gson.toJson(loginCCT);
-		//Log.grava(inputJson);
+		Log.grava(inputJson);
 		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta, "/session");
 		if (con != null) {
 			try {
 				String jsonRetorno = HttpClient.postMethod(con, inputJson);
-				//Log.grava(jsonRetorno);
+				Log.grava(jsonRetorno);
 				ssotoken = gson.fromJson(jsonRetorno, TokenRest.class);
 				return true;
 			}
 			catch (Exception e) {
-				//Log.grava(e.getMessage());
+				Log.grava(e.getMessage());
 			}
 		}
-		//Log.grava("Erro ao obter token."+servidorEnd + ":" + servidorPorta);
+		Log.grava("Erro ao obter token."+servidorEnd + ":" + servidorPorta);
 		return false;
 
 	}
@@ -93,15 +94,15 @@ public class ClienteRestAvaya {
 			subscription.setSubscriptionDetails(subscriptionDetails);
 			String inputJson = gson.toJson(restSubscription);
 
-			//Log.grava(inputJson);
+			Log.grava(inputJson);
 
 			con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
 					"/subscriptions?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 			if (con != null) {
 				String jsonRetorno = HttpClient.postMethod(con, inputJson);
-				//Log.grava(jsonRetorno);
-				//Log.grava(
-				//		"Servidor de Eventos Rest iniciado no servidor " + servidorEnd + " porta " + servidorPorta);
+				Log.grava(jsonRetorno);
+				Log.grava(
+						"Servidor de Eventos Rest iniciado no servidor " + servidorEnd + " porta " + servidorPorta);
 				return true;
 
 			}
@@ -120,16 +121,16 @@ public class ClienteRestAvaya {
 		contact.setMode("answer");
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
-		//Log.grava(inputJson);
+		Log.grava(inputJson);
 		
-		//Log.grava(contactId.getContact().getContactId());
-		//Log.grava(ssotoken.getUser().getSsoTokenValue());
+		Log.grava(contactId.getContact().getContactId());
+		Log.grava(ssotoken.getUser().getSsoTokenValue());
 		
 		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
 				"/contacts/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
-			//Log.grava(jsonRetorno);
+			Log.grava(jsonRetorno);
 			if (con.getResponseCode() != 200) {
 				contactId = gson.fromJson(jsonRetorno, ContactIdRest.class);
 				return true;
@@ -149,17 +150,17 @@ public class ClienteRestAvaya {
 		contact.setMode("drop");
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
-		//Log.grava(inputJson);
-		//String log = "http://"+servidorEnd + ":" + servidorPorta+
-		//		"/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue();
+		Log.grava(inputJson);
+		String log = "http://"+servidorEnd + ":" + servidorPorta+
+				"/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue();
 		
-		//Log.grava(log);
+		Log.grava(log);
 		
 		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
 				"/contacts/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
-			//Log.grava(jsonRetorno);
+			Log.grava(jsonRetorno);
 			if (con.getResponseCode() != 200) {
 				contactId = gson.fromJson(jsonRetorno, ContactIdRest.class);
 				return true;
@@ -183,12 +184,12 @@ public class ClienteRestAvaya {
 		contact.setOrigTerminalName(terminalName);
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
-		//Log.grava(inputJson);
+		Log.grava(inputJson);
 		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
 				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
-			//Log.grava(jsonRetorno);
+			Log.grava(jsonRetorno);
 			if (con.getResponseCode() == 200) {
 				contactId = gson.fromJson(jsonRetorno, ContactIdRest.class);
 				

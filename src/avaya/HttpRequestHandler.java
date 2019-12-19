@@ -22,6 +22,7 @@ import entity.Configuracao;
 import entity.EndPoint;
 import entity.Usuario;
 import util.FiltroWeb;
+import util.Log;
 
 @SuppressWarnings("restriction")
 public class HttpRequestHandler implements HttpHandler {
@@ -66,16 +67,20 @@ public class HttpRequestHandler implements HttpHandler {
 			br = new BufferedReader(new InputStreamReader(t.getRequestBody()));
 			if (br != null) {
 				while ((inputRequest = br.readLine()) != null) {
-					//Log.grava(inputRequest);
+					Log.grava(inputRequest);
 					requestContent.append(inputRequest);
 				}
 
 			}
 		}
 
+		Log.grava("requisicao...");
+		
 		URI uri = t.getRequestURI();
 
 		if (uri.getPath().equals("/Avaya/rest/ramal/config")) {
+			
+			Log.grava("Processando config ramal");
 
 			Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 			List<Usuario> listaUsuarios = null;
@@ -102,11 +107,11 @@ public class HttpRequestHandler implements HttpHandler {
 			String tagOrigTerminalName="";
 			String tagOrigAddressName="";
 			
-			//Log.grava("debug1");
+			
 
 			try {
 				
-				//Log.grava("debug4");
+				
 				BufferedReader rd = new BufferedReader(new FileReader("config.json"));
 				while (rd.ready()) {
 					jsonConfig = jsonConfig + rd.readLine();
@@ -118,7 +123,7 @@ public class HttpRequestHandler implements HttpHandler {
 				} else
 					conf = new Configuracao();
 			} catch (Exception e) {
-				//Log.grava("debug5");
+				
 			}
 			if(conf == null)
 			{
@@ -129,11 +134,11 @@ public class HttpRequestHandler implements HttpHandler {
 				listaUsuarios = new ArrayList<>();
 				conf.setListaUsuarios(listaUsuarios);
 			}
-			//Log.grava("debug2");
+			
 			
 			if (requestContent.toString().trim().length() > 0) {
 
-				//Log.grava("debug3");
+				
 				String entrada = requestContent.toString();
 				//entrada = entrada.replace("%40","@");
 				//entrada = entrada.replace("%3A",":");
@@ -187,10 +192,12 @@ public class HttpRequestHandler implements HttpHandler {
 			}
 
 			if (confServidor.equals("true")) {
+				Log.grava("Configurando servidor Avaya");
 				conf.setNomeServidorAvaya(endServidorAvaya);
 				conf.setPortaServidorAvaya(portaServidorAvaya);
 				conf.setDominio(dominio);
 			} else if (confRamal.equals("true")) {
+				Log.grava("Acrescentando ramal");
 				boolean isFind = false;
 				for (Usuario usuario : conf.getListaUsuarios()) {
 					if (usuario.getOrigTerminalName().equals(origTerminalName)) {
@@ -206,11 +213,11 @@ public class HttpRequestHandler implements HttpHandler {
 					if (senhaUsuario.trim().length() == 0) {
 						tagAlert = "alert('Senha deve ser preenchida')";
 					} else if (origAddressName.trim().length() == 0) {
-						tagAlert = "alert('Nome do Endereço de origem deve ser preenchido')";
+						tagAlert = "alert('Nome do Endereco de origem deve ser preenchido')";
 					} else if (origTerminalName.trim().length() == 0) {
 						tagAlert = "alert('Nome do Terminal de Origem')";
 					} else if (nomeUsuario.trim().length() == 0) {
-						tagAlert = "alert('Nome do Usuário')";
+						tagAlert = "alert('Nome do Usuario')";
 					} else {
 						Usuario usuario = new Usuario();
 						usuario.setSenhaUsuario(senhaUsuario);
@@ -221,6 +228,7 @@ public class HttpRequestHandler implements HttpHandler {
 					}
 				}
 			} else if (excluirRamal.equals("true")) {
+				Log.grava("Excluindo ramal");
 				for (Usuario usuario : conf.getListaUsuarios()) {
 					if (usuario.getOrigTerminalName().equals(terminalExcluir)) {
 						conf.getListaUsuarios().remove(usuario);
@@ -231,13 +239,14 @@ public class HttpRequestHandler implements HttpHandler {
 
 			}
 			else if (editarRamal.equals("true")) {
-				
+				Log.grava("Editando ramal");
 				for (Usuario usuario : conf.getListaUsuarios()) {
 					if (usuario.getOrigTerminalName().equals(terminalEditar)) {
 						tagNomeUsuario = usuario.getNomeUsuario();
 						tagSenhaUsuario = usuario.getSenhaUsuario();
 						tagOrigAddressName = usuario.getOrigAddressName();
 						tagOrigTerminalName = usuario.getOrigTerminalName();
+						Log.grava("Editando ramal OK...");
 						break;
 					}
 
@@ -254,7 +263,7 @@ public class HttpRequestHandler implements HttpHandler {
 				String arq = getClass().getResource("/html/Config.html").toString();
 
 				if (arq.contains("jar:")) {
-					//Log.grava("Recuperando recurso no JAR");
+					Log.grava("Recuperando recurso no JAR");
 					InputStream in = getClass().getResourceAsStream("/html/Config.html");
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 					while (reader.ready()) {
@@ -266,7 +275,7 @@ public class HttpRequestHandler implements HttpHandler {
 					//return;
 				}
 				else {
-					//Log.grava("Recuperando recurso");
+					Log.grava("Recuperando recurso");
 					arq = arq.replace("file:", "");
 					arq = arq.replace("jar:", "");
 					BufferedReader brConf = new BufferedReader(new FileReader(arq));
@@ -277,7 +286,7 @@ public class HttpRequestHandler implements HttpHandler {
 					brConf.close();
 				}
 				
-				//Log.grava("1");
+				Log.grava("populando html...");
 				
 				
 				if(conf.getNomeServidorAvaya()!=null)
@@ -300,9 +309,6 @@ public class HttpRequestHandler implements HttpHandler {
 				htmlConf = htmlConf.replace("tagOrigTerminalName", tagOrigTerminalName);
 				htmlConf = htmlConf.replace("tagOrigAddressName", tagOrigAddressName);
 				
-				
-				//Log.grava("2");
-
 				for (Usuario usuario : conf.getListaUsuarios()) {
 					usuarioTableHtml = usuarioTableHtml + "<tr><td>" + usuario.getNomeUsuario() + "</td><td>"
 							+ usuario.getOrigAddressName() + "</td><td>" + usuario.getOrigTerminalName()
@@ -314,17 +320,21 @@ public class HttpRequestHandler implements HttpHandler {
 				}
 				htmlConf = htmlConf.replace("linhaTag", usuarioTableHtml);
 
+				Log.grava("populando html para cliente...");
 				try {
 					byte[] bs = htmlConf.getBytes("UTF-8");
 					t.sendResponseHeaders(200, bs.length);
 					OutputStream os = t.getResponseBody();
 					os.write(bs);
+					os.flush();
+					os.close();
+					Log.grava("populando html para cliente enviado...");
 				} catch (IOException ex) {
-					//Log.grava("2");
+					Log.grava(ex.getMessage());
 				}
 
 			} catch (Exception e) {
-				//Log.grava(e.getMessage());
+				Log.grava(e.getMessage());
 			}
 
 		} else if (uri.getPath().equals("/Avaya/rest/ramal/eventos")) {

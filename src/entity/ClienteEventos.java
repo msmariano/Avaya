@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import avaya.ClienteRestAvaya;
+import util.Log;
 
 public class ClienteEventos implements Runnable {
 	private Socket socketCliente;
@@ -62,10 +63,11 @@ public class ClienteEventos implements Runnable {
 			while (true) {
 
 				String mens = entrada.readLine();
+				Log.grava("Mensagem ClienteEvento:"+mens);
 				String parse[] = mens.split("=");
 				if (parse != null && parse.length == 2) {
 					if (parse[0].toLowerCase().equals("ramal")) {
-						System.out.println("Setando socket para id " + parse[1] + " porta " + socketCliente.getPort());
+						Log.grava("Setando socket para id " + parse[1] + " porta " + socketCliente.getPort());
 
 						for (ClienteEventos cli : listaClienteEventos) {
 							if (cli.getId() != null && cli.getId().toLowerCase().equals(parse[1].toLowerCase())) {
@@ -143,7 +145,7 @@ public class ClienteEventos implements Runnable {
 							mens = mens.replace("[", "");
 							mens = mens.replace("]", "");
 							parse = mens.split(";");
-							System.out.println("comando " + parse[0] + " recebido.");
+							Log.grava("comando " + parse[0] + " recebido.");
 							if (parse[0].equalsIgnoreCase("makecall")) {
 								if (ativado) {
 
@@ -178,7 +180,7 @@ public class ClienteEventos implements Runnable {
 							}
 							//[monitorstart;device;TMonitorType[0=mtDevice|1=mtTrunk]]
 							else if (parse[0].equalsIgnoreCase("monitorstart")) {
-								System.out.println("Setando socket para id " + parse[1] + " porta " + socketCliente.getPort());
+								Log.grava("Setando socket para id " + parse[1] + " porta " + socketCliente.getPort());
 
 								for (ClienteEventos cli : listaClienteEventos) {
 									if (cli.getId() != null && cli.getId().toLowerCase().equals(parse[1].toLowerCase())) {

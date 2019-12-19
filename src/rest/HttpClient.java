@@ -34,7 +34,7 @@ public class HttpClient {
 			if (con.getResponseCode() != 200) {
 				BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
 				while ((output = br.readLine()) != null) {
-					//Log.grava(output);
+					Log.grava(output);
 					responseContent.append(output);
 				}
 
@@ -42,7 +42,7 @@ public class HttpClient {
 				BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
 				output = null;
 				while ((output = br.readLine()) != null) {
-					//Log.grava(output);
+					Log.grava(output);
 					responseContent.append(output);
 				}
 			}
@@ -89,7 +89,7 @@ public class HttpClient {
 				br = new BufferedReader(new InputStreamReader(con.getInputStream()));
 				output = null;
 				while ((output = br.readLine()) != null) {
-					//Log.grava(output);
+					Log.grava(output);
 					responseContent.append(output);
 				}
 			}
@@ -118,7 +118,7 @@ public class HttpClient {
 			String output = null;
 
 			while ((output = br.readLine()) != null) {
-				//Log.grava(output);
+				Log.grava(output);
 				responseContent.append(output);
 			}
 		} catch (Exception e) {
@@ -145,7 +145,7 @@ public class HttpClient {
 
 			con.setUseCaches(false);
 		} catch (Exception e) {
-			//Log.grava("HttpURLConnection: "+e.getMessage());
+			Log.grava("HttpURLConnection: "+e.getMessage());
 		}
 
 		return con;

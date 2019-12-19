@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 
 import entity.EndPoint;
 import entity.Event;
+import util.Log;
 
 
 
@@ -28,8 +29,8 @@ public class AvayaPointWS  implements Serializable {
 	@Produces(value = MediaType.APPLICATION_JSON + ";charset=UTF-8")
 	public Response eventos(EndPoint endPoint) {
 		
-		//Log.grava(endPoint.getEvent().getType());
-		//Log.grava(endPoint.getEvent().getParams().getCalledAddressName());
+		Log.grava(endPoint.getEvent().getType());
+		Log.grava(endPoint.getEvent().getParams().getCalledAddressName());
 		
 		return Response.ok().build();
 		

@@ -50,7 +50,7 @@ public class ServidorRest {
 		 * Log.grava(entrada);
 		 */
 
-		//Log.grava("carregando ServidorRest");
+		Log.grava("carregando ServidorRest");
 		ServidorRest servidorRest = new ServidorRest();
 		BufferedReader br = null;
 		if (args.length > 0) {
@@ -77,7 +77,6 @@ public class ServidorRest {
 				String portaHttpConfGeral = s.next();
 				Log.grava("Digite o numero da porta de Mensagens:");
 				String portaMens = s.next();
-				// Log.grava("Digite o caminho do arquivo de configuracao:");
 				Log.grava("Digite o ip do Servidor:");
 				String ipServidor = s.next();
 				String arqPathConf = "";
@@ -113,17 +112,17 @@ public class ServidorRest {
 						arq = servidorRest.getClass().getResource("/html/serverest").toString();
 					else
 					{
-						//Log.grava("nao obteve recurso serverest");
+						Log.grava("nao obteve recurso serverest");
 						return;
 					}
 				}catch (Exception e) {
-					//Log.grava(e.getMessage());
+					Log.grava(e.getMessage());
 					return;
 				}
 
 				String serverest = "";
 
-				//Log.grava("Buscando arquivo serverest");
+				Log.grava("Buscando arquivo serverest");
 				if (arq.contains("jar:")) {
 
 					try {
@@ -135,7 +134,7 @@ public class ServidorRest {
 
 						}
 					} catch (Exception e) {
-						//Log.grava(e.getMessage());
+						Log.grava(e.getMessage());
 					}
 
 				} else {
@@ -152,7 +151,7 @@ public class ServidorRest {
 
 				serverest = serverest.replace("TagPath", arqAbs);
 
-				//Log.grava("Salvando arquivo de servico");
+				Log.grava("Salvando arquivo de servico");
 				try {
 					bw = new BufferedWriter(new FileWriter("/etc/init.d/serverest"));
 					bw.write(serverest);
@@ -161,13 +160,13 @@ public class ServidorRest {
 
 				}
 
-				//Log.grava("Instalando servico");
+				Log.grava("Instalando servico");
 				Runtime run = Runtime.getRuntime();
 				run.exec("chmod 777 /etc/init.d/serverest");
 				run.exec("update-rc.d serverest defaults");
 				run.exec("update-rc.d serverest start 90 2 3 4 5");
 				run.exec("/etc/init.d/serverest remove");
-				//Log.grava("Fim");
+				Log.grava("Fim");
 				return;
 
 			}
@@ -186,12 +185,12 @@ public class ServidorRest {
 			arq = arq.replace("file:", "");
 			arq = arq.replace("jar:", "");
 
-			//Log.grava(arq);
+			Log.grava(arq);
 
 			br = new BufferedReader(new FileReader(arq + "configGeral.json"));
 		} catch (Exception e) {
-			//Log.grava(
-			//		"Falhou ao abrir arquivo de configuracao Geral. Execute java -jar Avaya.jar install e realize as configuracoes gerais.");
+			Log.grava(
+					"Falhou ao abrir arquivo de configuracao Geral. Execute java -jar Avaya.jar install e realize as configuracoes gerais.");
 			return;
 		}
 
@@ -205,7 +204,7 @@ public class ServidorRest {
 				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 				servidorRest.configuracaoGeral = gson.fromJson(configGeralJson, ConfiguracaoGeral.class);
 			} catch (Exception e) {
-				//Log.grava(e.getMessage());
+				Log.grava(e.getMessage());
 			}
 		}
 
@@ -266,20 +265,20 @@ public class ServidorRest {
 		//}
 
 		servidor.start();
-		//Log.grava("Servidor Http iniciado na porta " + servidorRest.configuracaoGeral.getHttpPort());
+		Log.grava("Servidor Http iniciado na porta " + servidorRest.configuracaoGeral.getHttpPort());
 
 		new Thread() {
 
 			@Override
 			public void run() {
-				//Log.grava(
-				//		"Servidor de Mensagens iniciado na porta " + servidorRest.configuracaoGeral.getMensPort());
+				Log.grava(
+						"Servidor de Mensagens iniciado na porta " + servidorRest.configuracaoGeral.getMensPort());
 				while (true) {
 					try {
 						Socket cliente;
 						cliente = servidorMens.accept();
-						//Log.grava("Cliente conectado: " + cliente.getInetAddress().getHostAddress() + " porta "
-						//		+ cliente.getPort());
+						Log.grava("Cliente conectado: " + cliente.getInetAddress().getHostAddress() + " porta "
+								+ cliente.getPort());
 						new Thread() {
 							@Override
 							public void run() {
