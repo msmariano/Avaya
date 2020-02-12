@@ -8,7 +8,7 @@ public class Log {
 	
 	public static void grava(String mensLog) {
 		
-		 
+		System.out.println(mensLog);
 		BufferedWriter bw;
 		try {
 			bw = new BufferedWriter(new FileWriter("log.txt",true));
