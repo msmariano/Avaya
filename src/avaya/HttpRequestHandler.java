@@ -40,6 +40,8 @@ public class HttpRequestHandler implements HttpHandler {
 
 	private FiltroWeb filtro;
 
+	private ServidorRest servidorRest;
+
 	public List<ClienteRestAvaya> getListaRamal() {
 		return listaRamal;
 	}
@@ -75,11 +77,11 @@ public class HttpRequestHandler implements HttpHandler {
 		}
 
 		Log.grava("requisicao...");
-		
+
 		URI uri = t.getRequestURI();
 
 		if (uri.getPath().equals("/Avaya/rest/ramal/config")) {
-			
+
 			Log.grava("Processando config ramal");
 
 			Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
@@ -101,57 +103,51 @@ public class HttpRequestHandler implements HttpHandler {
 			String excluirRamal = "";
 			String tagAlert = "";
 			String editarRamal = "";
-			String terminalEditar= "";
-			String tagNomeUsuario="";
-			String tagSenhaUsuario="";
-			String tagOrigTerminalName="";
-			String tagOrigAddressName="";
-			
-			
+			String terminalEditar = "";
+			String tagNomeUsuario = "";
+			String tagSenhaUsuario = "";
+			String tagOrigTerminalName = "";
+			String tagOrigAddressName = "";
 
 			try {
-				
-				
-				BufferedReader rd = new BufferedReader(new FileReader("config.json"));
-				while (rd.ready()) {
-					jsonConfig = jsonConfig + rd.readLine();
+
+				if (servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel() != null) {
+
+					BufferedReader rd = new BufferedReader(new FileReader(servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel()+"/config.json"));
+					while (rd.ready()) {
+						jsonConfig = jsonConfig + rd.readLine();
+					}
+					rd.close();
 				}
-				rd.close();
 				gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 				if (jsonConfig.length() > 0) {
 					conf = gson.fromJson(jsonConfig, Configuracao.class);
 				} else
 					conf = new Configuracao();
 			} catch (Exception e) {
-				
+
 			}
-			if(conf == null)
-			{
+			if (conf == null) {
 				conf = new Configuracao();
 			}
-			
+
 			if (conf.getListaUsuarios() == null) {
 				listaUsuarios = new ArrayList<>();
 				conf.setListaUsuarios(listaUsuarios);
 			}
-			
-			
+
 			if (requestContent.toString().trim().length() > 0) {
 
-				
 				String entrada = requestContent.toString();
-				//entrada = entrada.replace("%40","@");
-				//entrada = entrada.replace("%3A",":");
-				
+				// entrada = entrada.replace("%40","@");
+				// entrada = entrada.replace("%3A",":");
 
-				
-				 for(int i=32;i<127;i++) { String hex = "%"+String.format("%X", i); String
-				 simbolo = String.format("%c", i); entrada = entrada.replace(hex,simbolo); }
-				 
-				
-				
-				
-				
+				for (int i = 32; i < 127; i++) {
+					String hex = "%" + String.format("%X", i);
+					String simbolo = String.format("%c", i);
+					entrada = entrada.replace(hex, simbolo);
+				}
+
 				String variavelValor[] = entrada.split("&");
 
 				for (String campo : variavelValor) {
@@ -179,8 +175,7 @@ public class HttpRequestHandler implements HttpHandler {
 							terminalExcluir = conf[1];
 						} else if (conf[0].equals("excluirRamal")) {
 							excluirRamal = conf[1];
-						}
-						else if (conf[0].equals("editarRamal")) {
+						} else if (conf[0].equals("editarRamal")) {
 							editarRamal = conf[1];
 						} else if (conf[0].equals("terminalEditar")) {
 							terminalEditar = conf[1];
@@ -237,8 +232,7 @@ public class HttpRequestHandler implements HttpHandler {
 
 				}
 
-			}
-			else if (editarRamal.equals("true")) {
+			} else if (editarRamal.equals("true")) {
 				Log.grava("Editando ramal");
 				for (Usuario usuario : conf.getListaUsuarios()) {
 					if (usuario.getOrigTerminalName().equals(terminalEditar)) {
@@ -254,9 +248,11 @@ public class HttpRequestHandler implements HttpHandler {
 			}
 
 			jsonConfig = gson.toJson(conf);
-			BufferedWriter bw = new BufferedWriter(new FileWriter("config.json"));
+			if (servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel() != null) {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel()+"/config.json"));
 			bw.write(jsonConfig);
 			bw.close();
+			}
 
 			try {
 
@@ -271,10 +267,9 @@ public class HttpRequestHandler implements HttpHandler {
 
 					}
 					reader.close();
-					//ok(t, htmlConf);
-					//return;
-				}
-				else {
+					// ok(t, htmlConf);
+					// return;
+				} else {
 					Log.grava("Recuperando recurso");
 					arq = arq.replace("file:", "");
 					arq = arq.replace("jar:", "");
@@ -285,37 +280,36 @@ public class HttpRequestHandler implements HttpHandler {
 					}
 					brConf.close();
 				}
-				
+
 				Log.grava("populando html...");
-				
-				
-				if(conf.getNomeServidorAvaya()!=null)
+
+				if (conf.getNomeServidorAvaya() != null)
 					htmlConf = htmlConf.replace("endServidorAvayaTag", conf.getNomeServidorAvaya());
 				else
-					htmlConf = htmlConf.replace("endServidorAvayaTag","");
-				if(conf.getPortaServidorAvaya()!=null)
+					htmlConf = htmlConf.replace("endServidorAvayaTag", "");
+				if (conf.getPortaServidorAvaya() != null)
 					htmlConf = htmlConf.replace("portaServidorAvayaTag", conf.getPortaServidorAvaya());
 				else
-					htmlConf = htmlConf.replace("portaServidorAvayaTag","");
-				if(conf.getDominio()!=null)
+					htmlConf = htmlConf.replace("portaServidorAvayaTag", "");
+				if (conf.getDominio() != null)
 					htmlConf = htmlConf.replace("dominioTag", conf.getDominio());
 				else
-					htmlConf = htmlConf.replace("dominioTag","");
-				
+					htmlConf = htmlConf.replace("dominioTag", "");
+
 				htmlConf = htmlConf.replace("tagAlert", tagAlert);
-				
+
 				htmlConf = htmlConf.replace("tagNomeUsuario", tagNomeUsuario);
 				htmlConf = htmlConf.replace("tagSenhaUsuario", tagSenhaUsuario);
 				htmlConf = htmlConf.replace("tagOrigTerminalName", tagOrigTerminalName);
 				htmlConf = htmlConf.replace("tagOrigAddressName", tagOrigAddressName);
-				
+
 				for (Usuario usuario : conf.getListaUsuarios()) {
 					usuarioTableHtml = usuarioTableHtml + "<tr><td>" + usuario.getNomeUsuario() + "</td><td>"
 							+ usuario.getOrigAddressName() + "</td><td>" + usuario.getOrigTerminalName()
 							+ "</td><td><input type=\"button\" value=\"excluir\" onclick=\"excluir('"
 							+ usuario.getOrigTerminalName()
 							+ "');\"/></td> <td> <input type=\"button\" value=\"editar\" onclick=\"editar('"
-							+ usuario.getOrigTerminalName()+"');\"/></td></tr>";
+							+ usuario.getOrigTerminalName() + "');\"/></td></tr>";
 
 				}
 				htmlConf = htmlConf.replace("linhaTag", usuarioTableHtml);
@@ -552,6 +546,14 @@ public class HttpRequestHandler implements HttpHandler {
 
 	public void setListaClienteEventos(List<ClienteEventos> listaClienteEventos) {
 		this.listaClienteEventos = listaClienteEventos;
+	}
+
+	public ServidorRest getServidorRest() {
+		return servidorRest;
+	}
+
+	public void setServidorRest(ServidorRest servidorRest) {
+		this.servidorRest = servidorRest;
 	}
 
 }

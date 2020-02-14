@@ -19,7 +19,6 @@ import com.google.gson.GsonBuilder;
 import entity.ClienteEventos;
 import entity.Configuracao;
 import entity.ConfiguracaoGeral;
-import entity.Usuario;
 import util.Log;
 
 public class ServidorRest {
@@ -30,17 +29,18 @@ public class ServidorRest {
 	private static ServerSocket servidorMens;
 	private Configuracao conf;
 	private ConfiguracaoGeral configuracaoGeral;
-	private boolean isConf;
+	// private boolean isConf;
 	ClienteRestAvaya clienteRestAvaya;
+	private static Scanner s;
 
 	ServidorRest() {
 		handler = new HttpRequestHandler();
 		listaClienteEventos = new ArrayList<>();
-	    clienteRestAvaya = new ClienteRestAvaya();
+		clienteRestAvaya = new ClienteRestAvaya();
 	}
 
 	public static void main(String[] args) throws Exception {
-		
+
 		/*
 		 * String entrada="%40 %3A";
 		 * 
@@ -52,6 +52,7 @@ public class ServidorRest {
 
 		Log.grava("carregando ServidorRest");
 		ServidorRest servidorRest = new ServidorRest();
+		servidorRest.getHandler().setServidorRest(servidorRest);
 		BufferedReader br = null;
 		if (args.length > 0) {
 			if (args[0].equalsIgnoreCase("config")) {
@@ -62,18 +63,18 @@ public class ServidorRest {
 				});
 				return;
 			} else if (args[0].equalsIgnoreCase("teste")) {
-				Runtime run = Runtime.getRuntime();
+				// Runtime run = Runtime.getRuntime();
 				// run.exec("mkdir /home/msmariano/Desktop/teste");
 				return;
 			} else if (args[0].equalsIgnoreCase("versao")) {
-				Log.grava("v1.0.0");
+				Log.grava("v1.0.12");
 				return;
 			}
 
 			else if (args[0].equalsIgnoreCase("install")) {
 				Log.grava("Digite o numero da porta Http:");
 
-				Scanner s = new Scanner(System.in);
+				s = new Scanner(System.in);
 				String portaHttpConfGeral = s.next();
 				Log.grava("Digite o numero da porta de Mensagens:");
 				String portaMens = s.next();
@@ -85,11 +86,8 @@ public class ServidorRest {
 				confGeral.setMensPort(portaMens);
 				confGeral.setPathConfiguracao(arqPathConf);
 				confGeral.setIpServidor(ipServidor);
-				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
-				String jSonRetorno = gson.toJson(confGeral);
 
 				String arq = servidorRest.getClass().getResource("").toString();
-				
 
 				if (arq.contains("jar:")) {
 					String path[] = null;
@@ -101,6 +99,9 @@ public class ServidorRest {
 				arq = arq.replace("jar:", "");
 
 				String arqAbs = arq;
+				confGeral.setCaminhoDoExecutavel(arqAbs);
+				Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+				String jSonRetorno = gson.toJson(confGeral);
 
 				BufferedWriter bw = new BufferedWriter(new FileWriter(arq + "configGeral.json"));
 				bw.write(jSonRetorno);
@@ -108,14 +109,13 @@ public class ServidorRest {
 
 				try {
 					URL url = servidorRest.getClass().getResource("/html/serverest");
-					if(url!=null)
+					if (url != null)
 						arq = servidorRest.getClass().getResource("/html/serverest").toString();
-					else
-					{
+					else {
 						Log.grava("nao obteve recurso serverest");
 						return;
 					}
-				}catch (Exception e) {
+				} catch (Exception e) {
 					Log.grava(e.getMessage());
 					return;
 				}
@@ -218,51 +218,53 @@ public class ServidorRest {
 		String confJson = "";
 
 		try {
-			br = new BufferedReader(new FileReader("config.json"));
-			while (br.ready()) {
-				confJson = confJson + br.readLine();
+			if (servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel() != null) {
+				br = new BufferedReader(new FileReader(servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel()+"/config.json"));
+				while (br.ready()) {
+					confJson = confJson + br.readLine();
 
-			}
-			br.close();
+				}
+				br.close();
 
-			if (confJson.length() > 0) {
-				try {
-					Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
-					servidorRest.conf = gson.fromJson(confJson, Configuracao.class);
-					servidorRest.isConf = true;
-				} catch (Exception e) {
-					Log.grava(e.getMessage());
+				if (confJson.length() > 0) {
+					try {
+						Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+						servidorRest.conf = gson.fromJson(confJson, Configuracao.class);
+						// servidorRest.isConf = true;
+					} catch (Exception e) {
+						Log.grava(e.getMessage());
+					}
 				}
 			}
 		} catch (Exception e) {
-			servidorRest.isConf = false;
+			// servidorRest.isConf = false;
 			Log.grava("Falhou ao abrir arquivo de configuracao.");
 			// return;
 		}
 
-		//if (servidorRest.isConf) {
-			servidorRest.getHandler().setConf(servidorRest.conf);
+		// if (servidorRest.isConf) {
+		servidorRest.getHandler().setConf(servidorRest.conf);
 
-			if (servidorRest.conf != null && servidorRest.conf.getListaUsuarios() != null) {
-				//List<String> ramais = new ArrayList<>();
-				//for (Usuario usuario : servidorRest.conf.getListaUsuarios()) {
-					/*
-					 * ramais.add(usuario.getOrigTerminalName()); } if (ramais.size() > 0) {
-					 */
-					
-					servidorRest.clienteRestAvaya.setPortaEvento(String.valueOf(servidorRest.configuracaoGeral.getHttpPort()));
-					servidorRest.clienteRestAvaya.setServidorEnd(servidorRest.conf.getNomeServidorAvaya());
-					servidorRest.clienteRestAvaya.setServidorPorta(servidorRest.conf.getPortaServidorAvaya());
-					servidorRest.clienteRestAvaya.setDomain(servidorRest.conf.getDominio());
-					servidorRest.clienteRestAvaya.setUsername(servidorRest.conf.getUsuarioCCT());
-					servidorRest.clienteRestAvaya.setPassword(servidorRest.conf.getSenhaCCT());
-					/*
-					 * if (clienteRestAvaya.obterToken()) clienteRestAvaya.assinarEventos(ramais);
-					 * else { Log.grava("Nao foi possivel iniciar eventos"); }
-					 */
-				//}
-			}
-		//}
+		if (servidorRest.conf != null && servidorRest.conf.getListaUsuarios() != null) {
+			// List<String> ramais = new ArrayList<>();
+			// for (Usuario usuario : servidorRest.conf.getListaUsuarios()) {
+			/*
+			 * ramais.add(usuario.getOrigTerminalName()); } if (ramais.size() > 0) {
+			 */
+
+			servidorRest.clienteRestAvaya.setPortaEvento(String.valueOf(servidorRest.configuracaoGeral.getHttpPort()));
+			servidorRest.clienteRestAvaya.setServidorEnd(servidorRest.conf.getNomeServidorAvaya());
+			servidorRest.clienteRestAvaya.setServidorPorta(servidorRest.conf.getPortaServidorAvaya());
+			servidorRest.clienteRestAvaya.setDomain(servidorRest.conf.getDominio());
+			servidorRest.clienteRestAvaya.setUsername(servidorRest.conf.getUsuarioCCT());
+			servidorRest.clienteRestAvaya.setPassword(servidorRest.conf.getSenhaCCT());
+			/*
+			 * if (clienteRestAvaya.obterToken()) clienteRestAvaya.assinarEventos(ramais);
+			 * else { Log.grava("Nao foi possivel iniciar eventos"); }
+			 */
+			// }
+		}
+		// }
 
 		servidor.start();
 		Log.grava("Servidor Http iniciado na porta " + servidorRest.configuracaoGeral.getHttpPort());
@@ -271,8 +273,7 @@ public class ServidorRest {
 
 			@Override
 			public void run() {
-				Log.grava(
-						"Servidor de Mensagens iniciado na porta " + servidorRest.configuracaoGeral.getMensPort());
+				Log.grava("Servidor de Mensagens iniciado na porta " + servidorRest.configuracaoGeral.getMensPort());
 				while (true) {
 					try {
 						Socket cliente;
@@ -289,6 +290,7 @@ public class ServidorRest {
 								servidorRest.listaClienteEventos.add(clienteEventos);
 								clienteEventos.setConf(servidorRest.conf);
 								clienteEventos.setClienteRestAvaya(servidorRest.clienteRestAvaya);
+								clienteEventos.setServidorRest(servidorRest);
 								clienteEventos.run();
 							}
 

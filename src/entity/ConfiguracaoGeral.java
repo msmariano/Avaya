@@ -6,6 +6,7 @@ public class ConfiguracaoGeral {
 	private String httpPort;
 	private String mensPort;
 	private String ipServidor;
+	private String caminhoDoExecutavel;
 	
 	
 	public String getHttpPort() {
@@ -31,6 +32,12 @@ public class ConfiguracaoGeral {
 	}
 	public void setIpServidor(String ipServidor) {
 		this.ipServidor = ipServidor;
+	}
+	public String getCaminhoDoExecutavel() {
+		return caminhoDoExecutavel;
+	}
+	public void setCaminhoDoExecutavel(String caminhoDoExecutavel) {
+		this.caminhoDoExecutavel = caminhoDoExecutavel;
 	}
 	
 }

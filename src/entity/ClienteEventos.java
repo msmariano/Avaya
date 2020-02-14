@@ -2,6 +2,8 @@ package entity;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -9,7 +11,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import avaya.ClienteRestAvaya;
+import avaya.ServidorRest;
 import util.Log;
 
 public class ClienteEventos implements Runnable {
@@ -20,6 +26,7 @@ public class ClienteEventos implements Runnable {
 	private ClienteRestAvaya clienteRestAvaya;
 	private Usuario usuarioEvento;
 	private boolean ativado;
+	private ServidorRest servidorRest;
 
 	public ClienteEventos() {
 		clienteRestAvaya = new ClienteRestAvaya();
@@ -55,6 +62,54 @@ public class ClienteEventos implements Runnable {
 		saida.flush();
 	}
 
+	public void salvaConfig() {
+		Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+		String jsonConfig = gson.toJson(conf);
+		if (servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel() != null) {
+		BufferedWriter bw;
+		try {
+			bw = new BufferedWriter(new FileWriter(servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel()+"/config.json"));
+			bw.write(jsonConfig);
+			bw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		}
+	}
+	
+	public void carregaConfig() {
+		try {
+			BufferedReader br = null;
+			conf = null;
+			conf = new Configuracao();
+			String confJson = "";
+			if (servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel() != null) {
+				br = new BufferedReader(new FileReader(servidorRest.getConfiguracaoGeral().getCaminhoDoExecutavel()+"/config.json"));
+				while (br.ready()) {
+					confJson = confJson + br.readLine();
+
+				}
+				br.close();
+			}
+
+			if (confJson.length() > 0) {
+				try {
+					Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
+					conf = gson.fromJson(confJson, Configuracao.class);
+
+				} catch (Exception e) {
+					Log.grava(e.getMessage());
+				}
+			}
+		} catch (Exception e) {
+
+			Log.grava("Falhou ao abrir arquivo de configuracao.");
+			// return;
+		}
+	}
+
 	@Override
 	public void run() {
 		try {
@@ -63,10 +118,38 @@ public class ClienteEventos implements Runnable {
 			while (true) {
 
 				String mens = entrada.readLine();
-				Log.grava("Mensagem ClienteEvento:"+mens);
+				Log.grava("Mensagem ClienteEvento:" + mens);
 				String parse[] = mens.split("=");
 				if (parse != null && parse.length == 2) {
-					if (parse[0].toLowerCase().equals("ramal")) {
+					if(parse[0].toLowerCase().equals("ramalcfg")) {
+						String parseCfg[] = parse[1].split(";");
+						carregaConfig();
+						boolean isFind = false;
+						for (Usuario usuario : conf.getListaUsuarios()) {
+							if (usuario.getOrigTerminalName().equals(parseCfg[0])) {
+								isFind = true;
+								usuario.setNomeUsuario(parseCfg[1]);
+								usuario.setOrigAddressName(parseCfg[2]);
+								usuario.setSenhaUsuario(parseCfg[3]);
+								break;
+							}
+						}
+						
+						if(!isFind) {
+							Usuario usuario = new Usuario();
+							usuario.setOrigTerminalName(parseCfg[0]);
+							usuario.setNomeUsuario(parseCfg[1]);
+							usuario.setOrigAddressName(parseCfg[2]);
+							usuario.setSenhaUsuario(parseCfg[3]);
+							conf.getListaUsuarios().add(usuario);
+						}
+						salvaConfig();
+						retorno("ramal configuração;Ok");
+						
+					}
+					else if (parse[0].toLowerCase().equals("ramal")) {
+
+						carregaConfig();
 						Log.grava("Setando socket para id " + parse[1] + " porta " + socketCliente.getPort());
 
 						for (ClienteEventos cli : listaClienteEventos) {
@@ -80,7 +163,8 @@ public class ClienteEventos implements Runnable {
 									socketCliente.close();
 								} catch (IOException e) {
 									// TODO Auto-generated catch block
-									e.printStackTrace();
+									//e.printStackTrace();
+									Log.grava(e.getMessage());
 								}
 								listaClienteEventos.remove(this);
 								return;
@@ -102,7 +186,9 @@ public class ClienteEventos implements Runnable {
 								socketCliente.close();
 							} catch (IOException e) {
 								// TODO Auto-generated catch block
-								e.printStackTrace();
+								//e.printStackTrace();
+								Log.grava(e.getMessage());
+								
 							}
 							listaClienteEventos.remove(this);
 							return;
@@ -119,10 +205,11 @@ public class ClienteEventos implements Runnable {
 						if (clienteRestAvaya.obterToken()) {
 							ativado = true;
 							this.id = parse[1];
-							retorno("monitoracao;"+clienteRestAvaya.getSsotoken().getUser().getSsoTokenValue()+";ok");
+							retorno("monitoracao;" + clienteRestAvaya.getSsotoken().getUser().getSsoTokenValue()
+									+ ";ok");
 							List<String> listaEntityNames = new ArrayList<>();
 							listaEntityNames.add(usuarioEvento.getOrigTerminalName());
-							
+
 							clienteRestAvaya.assinarEventos(listaEntityNames);
 						} else {
 							retorno("monitoracao;nao foi possivel obter token;error");
@@ -130,7 +217,8 @@ public class ClienteEventos implements Runnable {
 								socketCliente.close();
 							} catch (IOException e) {
 								// TODO Auto-generated catch block
-								e.printStackTrace();
+								//e.printStackTrace();
+								Log.grava(e.getMessage());
 							}
 							listaClienteEventos.remove(this);
 							return;
@@ -163,7 +251,7 @@ public class ClienteEventos implements Runnable {
 
 							} else if (parse[0].equalsIgnoreCase("dropcall")) {
 								ContactIdRest contactIdRest = new ContactIdRest();
-								ContactId contactId  = new ContactId();
+								ContactId contactId = new ContactId();
 								contactId.setContactId(parse[2]);
 								contactIdRest.setContact(contactId);
 								clienteRestAvaya.setContactId(contactIdRest);
@@ -171,19 +259,20 @@ public class ClienteEventos implements Runnable {
 
 							} else if (parse[0].equalsIgnoreCase("answercall")) {
 								ContactIdRest contactIdRest = new ContactIdRest();
-								ContactId contactId  = new ContactId();
+								ContactId contactId = new ContactId();
 								contactId.setContactId(parse[2]);
 								contactIdRest.setContact(contactId);
 								clienteRestAvaya.setContactId(contactIdRest);
 								clienteRestAvaya.atender();
 
 							}
-							//[monitorstart;device;TMonitorType[0=mtDevice|1=mtTrunk]]
+							// [monitorstart;device;TMonitorType[0=mtDevice|1=mtTrunk]]
 							else if (parse[0].equalsIgnoreCase("monitorstart")) {
 								Log.grava("Setando socket para id " + parse[1] + " porta " + socketCliente.getPort());
 
 								for (ClienteEventos cli : listaClienteEventos) {
-									if (cli.getId() != null && cli.getId().toLowerCase().equals(parse[1].toLowerCase())) {
+									if (cli.getId() != null
+											&& cli.getId().toLowerCase().equals(parse[1].toLowerCase())) {
 										BufferedWriter saida = new BufferedWriter(
 												new OutputStreamWriter(socketCliente.getOutputStream()));
 										saida.write("ramal ja esta sendo monitorado!\n");
@@ -193,7 +282,8 @@ public class ClienteEventos implements Runnable {
 											socketCliente.close();
 										} catch (IOException e) {
 											// TODO Auto-generated catch block
-											e.printStackTrace();
+											//e.printStackTrace();
+											Log.grava(e.getMessage());
 										}
 										listaClienteEventos.remove(this);
 										return;
@@ -215,7 +305,8 @@ public class ClienteEventos implements Runnable {
 										socketCliente.close();
 									} catch (IOException e) {
 										// TODO Auto-generated catch block
-										e.printStackTrace();
+										//e.printStackTrace();
+										Log.grava(e.getMessage());
 									}
 									listaClienteEventos.remove(this);
 									return;
@@ -234,20 +325,22 @@ public class ClienteEventos implements Runnable {
 									this.id = parse[1];
 									List<String> listaEntityNames = new ArrayList<>();
 									listaEntityNames.add(usuarioEvento.getOrigTerminalName());
-									retorno("monitoracao;"+clienteRestAvaya.getSsotoken().getUser().getSsoTokenValue()+";ok");
+									retorno("monitoracao;" + clienteRestAvaya.getSsotoken().getUser().getSsoTokenValue()
+											+ ";ok");
 								} else {
 									retorno("monitoracao;nao foi possivel obter token;error");
 									try {
 										socketCliente.close();
 									} catch (IOException e) {
 										// TODO Auto-generated catch block
-										e.printStackTrace();
+										//e.printStackTrace();
+										Log.grava(e.getMessage());
 									}
 									listaClienteEventos.remove(this);
 									return;
 
 								}
-								
+
 							}
 
 							continue;
@@ -321,6 +414,14 @@ public class ClienteEventos implements Runnable {
 
 	public void setAtivado(boolean ativado) {
 		this.ativado = ativado;
+	}
+
+	public ServidorRest getServidorRest() {
+		return servidorRest;
+	}
+
+	public void setServidorRest(ServidorRest servidorRest) {
+		this.servidorRest = servidorRest;
 	}
 
 }

@@ -58,19 +58,28 @@ public class ClienteRestAvaya {
 		loginCCT.getUser().setUsername(username);
 		String inputJson = gson.toJson(loginCCT);
 		Log.grava(inputJson);
-		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta, "/session");
+		Log.grava("http://" + servidorEnd + ":" + servidorPorta + "/session");
+		try {
+			con = HttpClient.httpConnect("http://" + servidorEnd + ":" + servidorPorta, "/session");
+		} catch (Exception e) {
+			Log.grava("HttpClient.httpConnect error:"+e.getMessage());
+			return false;
+		}
 		if (con != null) {
 			try {
 				String jsonRetorno = HttpClient.postMethod(con, inputJson);
-				Log.grava(jsonRetorno);
-				ssotoken = gson.fromJson(jsonRetorno, TokenRest.class);
-				return true;
-			}
-			catch (Exception e) {
+				if (jsonRetorno != null&&jsonRetorno.length()>0) {
+					Log.grava(jsonRetorno);
+					ssotoken = gson.fromJson(jsonRetorno, TokenRest.class);
+					return true;
+				}
+			} catch (Exception e) {
 				Log.grava(e.getMessage());
+				Log.grava("HttpClient.postMethod error:"+e.getMessage());
+				return false;
 			}
 		}
-		Log.grava("Erro ao obter token."+servidorEnd + ":" + servidorPorta);
+		Log.grava("Erro ao obter token." + servidorEnd + ":" + servidorPorta);
 		return false;
 
 	}
@@ -88,21 +97,19 @@ public class ClienteRestAvaya {
 			subscriptionDetails.setType("terminal");
 
 			subscriptionDetails.setEntityNames(entityNames);
-			subscription.setEventEndpointUri("http://" + ipServidor + ":" + portaEvento
-					+ "/Avaya/rest/ramal/eventos");
+			subscription.setEventEndpointUri("http://" + ipServidor + ":" + portaEvento + "/Avaya/rest/ramal/eventos");
 			subscription.setProviderName("Passive");
 			subscription.setSubscriptionDetails(subscriptionDetails);
 			String inputJson = gson.toJson(restSubscription);
 
 			Log.grava(inputJson);
 
-			con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
+			con = HttpClient.httpConnect("http://" + servidorEnd + ":" + servidorPorta,
 					"/subscriptions?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 			if (con != null) {
 				String jsonRetorno = HttpClient.postMethod(con, inputJson);
 				Log.grava(jsonRetorno);
-				Log.grava(
-						"Servidor de Eventos Rest iniciado no servidor " + servidorEnd + " porta " + servidorPorta);
+				Log.grava("Servidor de Eventos Rest iniciado no servidor " + servidorEnd + " porta " + servidorPorta);
 				return true;
 
 			}
@@ -110,8 +117,7 @@ public class ClienteRestAvaya {
 		}
 		return false;
 	}
-	
-	
+
 	public Boolean atender() throws JsonSyntaxException, IOException {
 		Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 		RestContact restContact = new RestContact();
@@ -122,12 +128,12 @@ public class ClienteRestAvaya {
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
 		Log.grava(inputJson);
-		
+
 		Log.grava(contactId.getContact().getContactId());
 		Log.grava(ssotoken.getUser().getSsoTokenValue());
-		
-		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
-				"/contacts/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
+
+		con = HttpClient.httpConnect("http://" + servidorEnd + ":" + servidorPorta, "/contacts/"
+				+ contactId.getContact().getContactId() + "?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
 			Log.grava(jsonRetorno);
@@ -136,11 +142,10 @@ public class ClienteRestAvaya {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
-	
-	
+
 	public Boolean desligar() throws JsonSyntaxException, IOException {
 		Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy HH:mm:ss").create();
 		RestContact restContact = new RestContact();
@@ -151,13 +156,13 @@ public class ClienteRestAvaya {
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
 		Log.grava(inputJson);
-		String log = "http://"+servidorEnd + ":" + servidorPorta+
-				"/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue();
-		
+		String log = "http://" + servidorEnd + ":" + servidorPorta + "/" + contactId.getContact().getContactId()
+				+ "?ssotoken=" + ssotoken.getUser().getSsoTokenValue();
+
 		Log.grava(log);
-		
-		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
-				"/contacts/"+contactId.getContact().getContactId()+"?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
+
+		con = HttpClient.httpConnect("http://" + servidorEnd + ":" + servidorPorta, "/contacts/"
+				+ contactId.getContact().getContactId() + "?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
 			Log.grava(jsonRetorno);
@@ -166,7 +171,7 @@ public class ClienteRestAvaya {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -185,14 +190,14 @@ public class ClienteRestAvaya {
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
 		Log.grava(inputJson);
-		con = HttpClient.httpConnect("http://"+servidorEnd + ":" + servidorPorta,
+		con = HttpClient.httpConnect("http://" + servidorEnd + ":" + servidorPorta,
 				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
 			String jsonRetorno = HttpClient.postMethod(con, inputJson);
 			Log.grava(jsonRetorno);
 			if (con.getResponseCode() == 200) {
 				contactId = gson.fromJson(jsonRetorno, ContactIdRest.class);
-				
+
 				return true;
 			}
 		}
