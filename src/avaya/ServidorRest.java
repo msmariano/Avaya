@@ -38,6 +38,8 @@ public class ServidorRest {
 		listaClienteEventos = new ArrayList<>();
 		clienteRestAvaya = new ClienteRestAvaya();
 	}
+	
+	
 
 	public static void main(String[] args) throws Exception {
 
@@ -289,7 +291,9 @@ public class ServidorRest {
 								clienteEventos.setSocketCliente(cliente);
 								servidorRest.listaClienteEventos.add(clienteEventos);
 								clienteEventos.setConf(servidorRest.conf);
-								clienteEventos.setClienteRestAvaya(servidorRest.clienteRestAvaya);
+								servidorRest.configuraClienteRestAvaya(clienteEventos.getClienteRestAvaya());
+								
+								//clienteEventos.setClienteRestAvaya(servidorRest.clienteRestAvaya);
 								clienteEventos.setServidorRest(servidorRest);
 								clienteEventos.run();
 							}
@@ -304,6 +308,18 @@ public class ServidorRest {
 			}
 		}.start();
 
+	}
+	
+	public ClienteRestAvaya configuraClienteRestAvaya (ClienteRestAvaya clienteRestAvayaLocal){
+		clienteRestAvayaLocal.setIpServidor(configuracaoGeral.getIpServidor());
+		clienteRestAvayaLocal.setPortaEvento(String.valueOf(configuracaoGeral.getHttpPort()));
+		clienteRestAvayaLocal.setServidorEnd(conf.getNomeServidorAvaya());
+		clienteRestAvayaLocal.setServidorPorta(conf.getPortaServidorAvaya());
+		clienteRestAvayaLocal.setDomain(conf.getDominio());
+		clienteRestAvayaLocal.setUsername(conf.getUsuarioCCT());
+		clienteRestAvayaLocal.setPassword(conf.getSenhaCCT());
+		
+		return clienteRestAvayaLocal;
 	}
 
 	public HttpRequestHandler getHandler() {

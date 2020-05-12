@@ -118,7 +118,16 @@ public class ClienteEventos implements Runnable {
 			while (true) {
 
 				String mens = entrada.readLine();
+				
+				if(mens == null)
+					break;
+				
 				Log.grava("Mensagem ClienteEvento:" + mens);
+				
+				if(mens.equals("SSH-2.0-PuTTY_Release_0.73")) {
+					continue;
+				}
+				
 				String parse[] = mens.split("=");
 				if (parse != null && parse.length == 2) {
 					if(parse[0].toLowerCase().equals("ramalcfg")) {
