@@ -190,6 +190,7 @@ public class ClienteRestAvaya {
 		contact.setProviderName("Passive");
 		String inputJson = gson.toJson(restContact);
 		Log.grava(inputJson);
+		String com = "";
 		con = HttpClient.httpConnect("http://" + servidorEnd + ":" + servidorPorta,
 				"/contacts?ssotoken=" + ssotoken.getUser().getSsoTokenValue());
 		if (con != null) {
